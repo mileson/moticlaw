@@ -1,0 +1,147 @@
+name: release-native-matrix
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version (without v prefix)
+        required: true
+        default: "0.1.0"
+      channel:
+        description: Release channel
+        required: true
+        default: "release"
+      publish_release:
+        description: Publish GitHub release after build
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: build-${{ matrix.platform_key }}
+    runs-on: ${{ matrix.runs_on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform_key: darwin-arm64
+            runs_on: macos-14
+            release_os: darwin
+            release_arch: arm64
+          - platform_key: darwin-x64
+            runs_on: macos-13
+            release_os: darwin
+            release_arch: x64
+          - platform_key: linux-x64
+            runs_on: ubuntu-22.04
+            release_os: linux
+            release_arch: x64
+          - platform_key: windows-x64
+            runs_on: windows-2022
+            release_os: windows
+            release_arch: x64
+
+    defaults:
+      run:
+        shell: bash
+
+    env:
+      MOTICLAW_RELEASE_VERSION: ${{ inputs.version }}
+      MOTICLAW_RELEASE_CHANNEL: ${{ inputs.channel }}
+      MOTICLAW_RELEASE_TAG: v${{ inputs.version }}
+      MOTICLAW_RELEASE_ARCHIVE_BASE_URL: https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}
+      MOTICLAW_RELEASE_OS: ${{ matrix.release_os }}
+      MOTICLAW_RELEASE_ARCH: ${{ matrix.release_arch }}
+      MOTICLAW_BUNDLE_NODE: "1"
+      MOTICLAW_PYTHON_BIN: python
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: requirements.txt
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "10"
+
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Install web dependencies
+        run: pnpm install --dir web --no-frozen-lockfile
+
+      - name: Build release bundle
+        run: bash scripts/release/build_release_bundle.sh
+
+      - name: Upload per-platform dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.platform_key }}
+          path: release-out/dist/*
+          if-no-files-found: error
+
+  publish:
+    name: publish-release
+    runs-on: ubuntu-22.04
+    needs: build
+    if: ${{ inputs.publish_release }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all dist artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Merge manifests and checksums
+        run: |
+          python scripts/release/merge_release_manifests.py \
+            --input-dir release-artifacts/dist-darwin-arm64 \
+            --input-dir release-artifacts/dist-darwin-x64 \
+            --input-dir release-artifacts/dist-linux-x64 \
+            --input-dir release-artifacts/dist-windows-x64 \
+            --output-dir release-artifacts/merged \
+            --version "${{ inputs.version }}" \
+            --channel "${{ inputs.channel }}"
+
+      - name: Create or update release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="v${{ inputs.version }}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" \
+              release-artifacts/dist-darwin-arm64/* \
+              release-artifacts/dist-darwin-x64/* \
+              release-artifacts/dist-linux-x64/* \
+              release-artifacts/dist-windows-x64/* \
+              release-artifacts/merged/* \
+              --clobber
+          else
+            gh release create "$tag" \
+              release-artifacts/dist-darwin-arm64/* \
+              release-artifacts/dist-darwin-x64/* \
+              release-artifacts/dist-linux-x64/* \
+              release-artifacts/dist-windows-x64/* \
+              release-artifacts/merged/* \
+              --title "$tag" \
+              --notes "Automated native release build"
+          fi

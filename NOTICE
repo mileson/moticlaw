@@ -1,0 +1,86 @@
+MotiClaw
+Copyright (c) 2026 MotiClaw Contributors. All Rights Reserved.
+
+================================================================================
+INTELLECTUAL PROPERTY PROTECTION & REVERSE ENGINEERING PROHIBITION
+================================================================================
+
+1. PROPRIETARY CONTENT
+
+   This software contains proprietary algorithms, trade secrets, and
+   confidential business logic. Portions of this software are distributed
+   as compiled binary modules (.so/.pyd). The compiled form constitutes a
+   technical protection measure under applicable law.
+
+2. PROHIBITED ACTIVITIES
+
+   You SHALL NOT:
+
+   (a) reverse engineer, decompile, disassemble, or otherwise attempt to
+       derive the source code, underlying ideas, algorithms, or structure
+       of any compiled or obfuscated portions of this software;
+
+   (b) modify, translate, adapt, or create derivative works based on any
+       compiled or obfuscated portions of this software;
+
+   (c) circumvent, bypass, remove, deactivate, or otherwise defeat any
+       technical protection measures including but not limited to code
+       obfuscation, compilation, encryption, or licensing mechanisms;
+
+   (d) distribute, sublicense, lease, rent, or transfer the software or
+       any portion thereof without prior written authorization;
+
+   (e) remove or alter any proprietary notices, labels, marks, or
+       copyright headers contained in the software.
+
+3. APPLICABLE LAW
+
+   Violations of these prohibitions may constitute infringement under:
+
+   - Digital Millennium Copyright Act (DMCA), 17 U.S.C. § 1201
+     (circumvention of technological measures)
+
+   - EU Directive 2009/24/EC on the Legal Protection of Computer Programs
+
+   - 中华人民共和国著作权法 (Copyright Law of the People's Republic of China)
+
+   - 中华人民共和国反不正当竞争法 (Anti-Unfair Competition Law of the People's
+     Republic of China), particularly provisions regarding trade secret
+     protection
+
+   - 中华人民共和国刑法 (Criminal Law of the People's Republic of China),
+     Article 217 (copyright infringement) and Article 219 (trade secret
+     infringement)
+
+4. ENFORCEMENT
+
+   Any violation of the above prohibitions will result in:
+
+   (a) Immediate and automatic termination of your license to use this
+       software;
+
+   (b) Potential civil liability for damages, including but not limited to
+       actual damages, statutory damages, and attorney's fees;
+
+   (c) Potential criminal liability under applicable law.
+
+   The Licensor reserves all rights to pursue legal remedies in any
+   jurisdiction where a violation occurs.
+
+5. THIRD-PARTY OBLIGATIONS
+
+   If you engage employees, contractors, agents, or subcontractors who
+   have access to this software, you SHALL ensure they are bound by
+   obligations no less restrictive than those set forth herein.
+
+6. SURVIVAL
+
+   The obligations under this Notice shall survive the termination or
+   expiration of any license agreement.
+
+================================================================================
+THIRD-PARTY NOTICES
+================================================================================
+
+This software includes third-party open source components. See the
+respective license files in the source distribution for details.
