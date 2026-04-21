@@ -41,7 +41,52 @@ function Fetch-ToFile([string]$SourceRef, [string]$TargetFile) {
         Copy-Item $SourceRef $TargetFile -Force
         return
     }
-    Invoke-WebRequest -Uri $SourceRef -OutFile $TargetFile
+    $downloadPath = "$TargetFile.download"
+    if (Test-Path $downloadPath) {
+        Remove-Item $downloadPath -Force
+    }
+
+    $lastError = $null
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+        try {
+            Write-Info "Downloading: $SourceRef"
+            if (Get-Command curl.exe -ErrorAction SilentlyContinue) {
+                $curlArgs = @(
+                    "--fail",
+                    "--location",
+                    "--retry", "3",
+                    "--retry-all-errors",
+                    "--retry-delay", "2",
+                    "--continue-at", "-",
+                    "--ssl-no-revoke",
+                    "--output", $downloadPath,
+                    $SourceRef
+                )
+                & curl.exe @curlArgs
+                if ($LASTEXITCODE -ne 0) {
+                    throw "curl.exe exited with code $LASTEXITCODE"
+                }
+            }
+            else {
+                Invoke-WebRequest -Uri $SourceRef -OutFile $downloadPath -ErrorAction Stop
+            }
+
+            Move-Item $downloadPath $TargetFile -Force
+            return
+        }
+        catch {
+            $lastError = $_.Exception.Message
+            if (($attempt -ge 3) -and (Test-Path $downloadPath)) {
+                Remove-Item $downloadPath -Force -ErrorAction SilentlyContinue
+            }
+            if ($attempt -lt 3) {
+                Write-Warn "Download failed, retrying ($attempt/3): $lastError"
+                Start-Sleep -Seconds (2 * $attempt)
+            }
+        }
+    }
+
+    Write-Fail "Failed to download $SourceRef. Please check your network, or set MOTICLAW_RELEASE_ARCHIVE to a mirror/local file. Last error: $lastError"
 }
 
 function Get-Sha256([string]$FilePath) {
