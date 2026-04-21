@@ -41,7 +41,52 @@ function Fetch-ToFile([string]$SourceRef, [string]$TargetFile) {
         Copy-Item $SourceRef $TargetFile -Force
         return
     }
-    Invoke-WebRequest -Uri $SourceRef -OutFile $TargetFile
+    $downloadPath = "$TargetFile.download"
+    if (Test-Path $downloadPath) {
+        Remove-Item $downloadPath -Force
+    }
+
+    $lastError = $null
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+        try {
+            Write-Info "Downloading: $SourceRef"
+            if (Get-Command curl.exe -ErrorAction SilentlyContinue) {
+                $curlArgs = @(
+                    "--fail",
+                    "--location",
+                    "--retry", "3",
+                    "--retry-all-errors",
+                    "--retry-delay", "2",
+                    "--continue-at", "-",
+                    "--ssl-no-revoke",
+                    "--output", $downloadPath,
+                    $SourceRef
+                )
+                & curl.exe @curlArgs
+                if ($LASTEXITCODE -ne 0) {
+                    throw "curl.exe exited with code $LASTEXITCODE"
+                }
+            }
+            else {
+                Invoke-WebRequest -Uri $SourceRef -OutFile $downloadPath -ErrorAction Stop
+            }
+
+            Move-Item $downloadPath $TargetFile -Force
+            return
+        }
+        catch {
+            $lastError = $_.Exception.Message
+            if (($attempt -ge 3) -and (Test-Path $downloadPath)) {
+                Remove-Item $downloadPath -Force -ErrorAction SilentlyContinue
+            }
+            if ($attempt -lt 3) {
+                Write-Warn "Download failed, retrying ($attempt/3): $lastError"
+                Start-Sleep -Seconds (2 * $attempt)
+            }
+        }
+    }
+
+    Write-Fail "Failed to download $SourceRef. Please check your network, or set MOTICLAW_RELEASE_ARCHIVE to a mirror/local file. Last error: $lastError"
 }
 
 function Get-Sha256([string]$FilePath) {
@@ -61,7 +106,7 @@ function Read-ManifestArtifact([string]$ManifestPath, [string]$PlatformKey) {
     $manifest = Get-Content $ManifestPath -Raw | ConvertFrom-Json
     $artifact = $manifest.artifacts.$PlatformKey
     if (-not $artifact) {
-        Write-Fail "release manifest 未包含当前平台产物：$PlatformKey"
+        Write-Fail "release manifest missing current platform artifact: $PlatformKey"
     }
     return @{
         version = $manifest.version
@@ -179,8 +224,8 @@ function Start-Detached([string]$Root, [string]$EnvFile) {
     $nodeExe = if (Test-Path (Join-Path $Root "web/node/node.exe")) { Join-Path $Root "web/node/node.exe" } else { Join-Path $Root "web/node/bin/node" }
     $serverJs = Join-Path $Root "web/standalone/server.js"
 
-    if (-not (Test-Path $apiExe)) { Write-Fail "API 二进制不存在：$apiExe" }
-    if (-not (Test-Path $nodeExe)) { Write-Fail "Node 运行时不存在：$nodeExe" }
+    if (-not (Test-Path $apiExe)) { Write-Fail "API binary not found: $apiExe" }
+    if (-not (Test-Path $nodeExe)) { Write-Fail "Node runtime not found: $nodeExe" }
 
     $apiProc = Start-Process -FilePath $apiExe -ArgumentList @("--host", $envPairs["MOTICLAW_API_HOST"], "--port", $envPairs["MOTICLAW_API_PORT"]) -WorkingDirectory $Root -RedirectStandardOutput (Join-Path $logsDir "install-api.log") -RedirectStandardError (Join-Path $logsDir "install-api.log") -WindowStyle Hidden -PassThru
     $webProc = Start-Process -FilePath $nodeExe -ArgumentList @($serverJs) -WorkingDirectory (Join-Path $Root "web/standalone") -RedirectStandardOutput (Join-Path $logsDir "install-web.log") -RedirectStandardError (Join-Path $logsDir "install-web.log") -WindowStyle Hidden -PassThru
@@ -198,7 +243,7 @@ function Wait-Http([string]$Url, [int]$TimeoutSec = 90) {
             Start-Sleep -Seconds 1
         }
     }
-    Write-Fail "服务未在预期时间内启动：$Url"
+    Write-Fail "Service did not start within the expected time: $Url"
 }
 
 $platformKey = Get-PlatformKey
@@ -210,9 +255,20 @@ try {
     Fetch-ToFile $manifestSource $manifestPath
     $manifestDir = Split-Path -Parent $manifestPath
     $manifestInfo = Read-ManifestArtifact $manifestPath $platformKey
-    $archiveRef = if (-not [string]::IsNullOrWhiteSpace($ArchiveOverride)) { $ArchiveOverride } else { $manifestInfo.archive.url ?? $manifestInfo.archive.relative_path ?? $manifestInfo.archive.filename }
+    if (-not [string]::IsNullOrWhiteSpace($ArchiveOverride)) {
+        $archiveRef = $ArchiveOverride
+    }
+    elseif ($manifestInfo.archive.url) {
+        $archiveRef = $manifestInfo.archive.url
+    }
+    elseif ($manifestInfo.archive.relative_path) {
+        $archiveRef = $manifestInfo.archive.relative_path
+    }
+    else {
+        $archiveRef = $manifestInfo.archive.filename
+    }
     $archiveRef = Resolve-RefFromManifest $manifestSource $manifestDir $archiveRef
-    if (-not $archiveRef) { Write-Fail "release manifest 缺少 archive 信息。" }
+    if (-not $archiveRef) { Write-Fail "release manifest is missing archive info." }
 
     Write-Info "MotiClaw Native Installer"
     Write-Info "Manifest: $manifestSource"
@@ -222,7 +278,7 @@ try {
     Write-Info "Install root: $InstallDir"
 
     if ($DryRun) {
-        Write-Warn "dry-run 模式，仅打印动作"
+        Write-Warn "dry-run mode, printing actions only"
         return
     }
 
@@ -230,7 +286,7 @@ try {
     Fetch-ToFile $archiveRef $archivePath
     if ($manifestInfo.archive.sha256) {
         if ((Get-Sha256 $archivePath) -ne $manifestInfo.archive.sha256.ToLowerInvariant()) {
-            Write-Fail "archive checksum 校验失败。"
+            Write-Fail "archive checksum validation failed."
         }
     }
 
@@ -263,9 +319,9 @@ try {
     Wait-Http "http://$($envPairs['MOTICLAW_API_HOST'])`:$($envPairs['MOTICLAW_API_PORT'])/healthz"
     Wait-Http "http://$($envPairs['MOTICLAW_WEB_HOST'])`:$($envPairs['MOTICLAW_WEB_PORT'])/login"
 
-    Write-Ok "安装完成"
+    Write-Ok "Installation complete"
     Write-Host ""
-    Write-Host "后续命令："
+    Write-Host "Next commands:"
     Write-Host "  moticlaw.ps1 status"
     Write-Host "  moticlaw.ps1 open"
     Write-Host "  moticlaw.ps1 version"
