@@ -1,0 +1,6 @@
+e7a5a197ed059c0272ee91ceb23dc592e2b3b3b8788df40cb2771859123c7646  v0.1.11/macos/arm64/MotiClaw-v0.1.11-macos-arm64.dmg
+f10c95be4761445c3640a8289bf8e517e0163fd7217caf25aa0fdd311df75f0a  v0.1.11/macos/x64/MotiClaw-v0.1.11-macos-x64.dmg
+ae5c1fba3d41e308bc59cb4626ea76aa07ef922bcd7d1fe6b1cd5db608fad98e  v0.1.11/windows/arm64/MotiClaw-v0.1.11-windows-arm64-portable.exe
+f47b096dfb0e75bf53c6c32fed3e95b6076c401a693dfda98092054bdbc8aec1  v0.1.11/windows/arm64/MotiClaw-v0.1.11-windows-arm64-setup.exe
+9df16480710dd342d13904004f7d31c7044c8f4f6b136d077e9f5f60faa520d7  v0.1.11/windows/x64/MotiClaw-v0.1.11-windows-x64-portable.exe
+fd61a36f70770f6fe008c65ff0e8ede80d422b2eabf728c9c248d6aa756e2cbc  v0.1.11/windows/x64/MotiClaw-v0.1.11-windows-x64-setup.exe

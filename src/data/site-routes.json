@@ -1,0 +1,1007 @@
+{
+  "version": 2,
+  "navigation": [
+    {
+      "id": "product",
+      "label": {
+        "zh": "产品",
+        "en": "Product"
+      },
+      "routeId": "capabilities"
+    },
+    {
+      "id": "solutions",
+      "label": {
+        "zh": "解决方案",
+        "en": "Solutions"
+      },
+      "routeId": "solutions"
+    },
+    {
+      "id": "workflows",
+      "label": {
+        "zh": "工作流",
+        "en": "Workflows"
+      },
+      "routeId": "workflows"
+    },
+    {
+      "id": "resources",
+      "label": {
+        "zh": "资源",
+        "en": "Resources"
+      },
+      "routeId": "resources"
+    },
+    {
+      "id": "pricing",
+      "label": {
+        "zh": "定价",
+        "en": "Pricing"
+      },
+      "routeId": "pricing"
+    }
+  ],
+  "visualProfiles": {
+    "agent-console": {
+      "assetId": "agent-console-screenshot",
+      "kind": "screenshot",
+      "src": "/seo/founder-ai-employee-first-workflow/screenshot-01.png",
+      "width": 1440,
+      "height": 1000,
+      "alt": {
+        "zh": "MotiClaw AI 伙伴管理工作台，展示伙伴状态、渠道、任务和运行情况",
+        "en": "MotiClaw AI partner workbench showing partner status, channels, tasks, and activity"
+      },
+      "caption": {
+        "zh": "在同一个工作台里查看 AI 伙伴的状态、任务和需要人工复核的地方。画面使用本地示例数据。",
+        "en": "Review AI partner status, tasks, and the points that still need a human check in one workbench. Shown with local sample data."
+      }
+    },
+    "local-agent-console": {
+      "assetId": "local-agent-console-screenshot",
+      "kind": "screenshot",
+      "src": "/seo/local-ai-agent-platform-vs-cloud/screenshot-01.png",
+      "width": 1440,
+      "height": 1000,
+      "alt": {
+        "zh": "MotiClaw AI 伙伴管理工作台，展示 15 位伙伴的运行状态和人工确认点",
+        "en": "MotiClaw AI partner workbench showing operating states and human checkpoints for 15 partners"
+      },
+      "caption": {
+        "zh": "先在一个界面里看清工作、空闲、离线与异常状态，再决定哪些任务继续运行、哪些需要人工处理。画面使用本地示例数据。",
+        "en": "Review working, idle, offline, and failed states in one view before deciding what keeps running and what needs human attention. Shown with local sample data."
+      }
+    },
+    "workflow-checklist-console": {
+      "assetId": "workflow-checklist-console-screenshot",
+      "kind": "screenshot",
+      "src": "/seo/agent-management-workbench-checklist/screenshot-01.png",
+      "width": 1440,
+      "height": 1000,
+      "alt": {
+        "zh": "MotiClaw AI 伙伴管理工作台，展示 15 位伙伴的工作、空闲、离线与异常状态",
+        "en": "MotiClaw AI partner workbench showing working, idle, offline, and failed states across 15 partners"
+      },
+      "caption": {
+        "zh": "先看清每位 AI 伙伴的状态与异常，再决定继续运行、暂停或人工接管。画面使用本地示例数据。",
+        "en": "Review each AI partner's state and exceptions before deciding what continues, pauses, or returns for human review. Shown with local sample data."
+      }
+    },
+    "fde-delivery-checklist-console": {
+      "assetId": "fde-delivery-checklist-console-screenshot",
+      "kind": "screenshot",
+      "src": "/seo/fde-ai-delivery-checklist/screenshot-01.png",
+      "width": 1440,
+      "height": 1000,
+      "alt": {
+        "zh": "MotiClaw 问题修复页面，展示检查、恢复和结果确认状态",
+        "en": "MotiClaw recovery page showing inspection, recovery, and result confirmation states"
+      },
+      "caption": {
+        "zh": "交付者可以先确认运行状态和恢复结果，再决定是否继续下一步。画面使用本地示例数据。",
+        "en": "A delivery practitioner can confirm operating state and recovery results before continuing. Shown with local sample data."
+      }
+    },
+    "workflow-mistakes-console": {
+      "assetId": "workflow-mistakes-console-screenshot",
+      "kind": "screenshot",
+      "src": "/seo/agent-management-workbench-common-mistakes/screenshot-01.png",
+      "width": 1440,
+      "height": 1000,
+      "alt": {
+        "zh": "MotiClaw AI 伙伴工作台，展示工作、空闲、离线与异常状态",
+        "en": "MotiClaw AI partner workbench showing working, idle, offline, and failed states"
+      },
+      "caption": {
+        "zh": "先看清 AI 伙伴的运行状态与异常，再决定继续、暂停或人工接管。画面使用本地示例数据。",
+        "en": "Review AI partner state and exceptions before deciding what continues, pauses, or returns for human review. Shown with local sample data."
+      }
+    },
+    "local-workspace": {
+      "assetId": "local-workspace-concept",
+      "kind": "concept",
+      "src": "/landing/product-features/local-workspace.webp",
+      "width": 960,
+      "height": 540,
+      "alt": {
+        "zh": "MotiClaw 本地工作空间能力示意",
+        "en": "MotiClaw local workspace capability illustration"
+      },
+      "caption": {
+        "zh": "能力示意：把工作、AI 伙伴和运行边界收回到自己的设备上。",
+        "en": "Capability illustration: keep work, AI partners, and operating boundaries on your own device."
+      }
+    },
+    "partner-ready": {
+      "assetId": "partner-ready-concept",
+      "kind": "concept",
+      "src": "/landing/product-features/partner-ready.webp",
+      "width": 960,
+      "height": 540,
+      "alt": {
+        "zh": "MotiClaw AI 伙伴协作与交付能力示意",
+        "en": "MotiClaw AI partner collaboration and delivery capability illustration"
+      },
+      "caption": {
+        "zh": "能力示意：从准备工作到交付，把重复动作放进一条可检查的路径。",
+        "en": "Capability illustration: move repeated work from preparation to delivery through a reviewable path."
+      }
+    },
+    "patrol-console": {
+      "assetId": "patrol-console-concept",
+      "kind": "concept",
+      "src": "/landing/product-features/patrol-console.webp",
+      "width": 960,
+      "height": 540,
+      "alt": {
+        "zh": "MotiClaw 状态巡检和持续维护能力示意",
+        "en": "MotiClaw status patrol and ongoing maintenance capability illustration"
+      },
+      "caption": {
+        "zh": "能力示意：持续看见状态、异常和下一步，而不是等工作失控后再排查。",
+        "en": "Capability illustration: keep status, exceptions, and next actions visible before work drifts out of control."
+      }
+    }
+  },
+  "routes": [
+    {
+      "id": "home",
+      "path": "/",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "home",
+      "cluster": "brand",
+      "parentHub": null,
+      "navTier": 0,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "changeFrequency": "daily",
+      "priority": 1,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "download",
+      "kind": "download",
+      "path": "/download",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "conversion",
+      "cluster": "product-core",
+      "parentHub": "capabilities",
+      "navTier": 0,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "capabilities",
+        "local-deployment",
+        "agent-management-workbench",
+        "ai-partner-for-founders"
+      ],
+      "schemaTypes": [
+        "WebPage",
+        "SoftwareApplication",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "product-evidence",
+      "visualProfile": "agent-console",
+      "changeFrequency": "daily",
+      "priority": 0.95,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "pricing",
+      "path": "/pricing",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "pricing",
+      "cluster": "product-core",
+      "parentHub": "capabilities",
+      "navTier": 1,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "changeFrequency": "weekly",
+      "priority": 0.92,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "local-deployment",
+      "kind": "localDeployment",
+      "path": "/local-deployment",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "product-detail",
+      "cluster": "product-core",
+      "parentHub": "capabilities",
+      "navTier": 2,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "download",
+        "capabilities",
+        "agent-management-workbench",
+        "fde-local-ai-delivery"
+      ],
+      "schemaTypes": [
+        "WebPage",
+        "SoftwareApplication",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "product-evidence",
+      "visualProfile": "local-workspace",
+      "changeFrequency": "weekly",
+      "priority": 0.9,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "capabilities",
+      "kind": "capabilities",
+      "path": "/capabilities",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "product-overview",
+      "cluster": "product-core",
+      "parentHub": null,
+      "navTier": 1,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "agent-management-workbench",
+        "local-deployment",
+        "fde-ai-delivery",
+        "ai-workbench-for-indie-developers",
+        "ai-partner-for-founders"
+      ],
+      "schemaTypes": [
+        "WebPage",
+        "SoftwareApplication",
+        "ItemList",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "product-evidence",
+      "visualProfile": "agent-console",
+      "changeFrequency": "weekly",
+      "priority": 0.88,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "ai-partner-console",
+      "path": "/ai-partner-console",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "interactive-preview",
+      "cluster": "product-core",
+      "parentHub": "capabilities",
+      "navTier": 2,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "changeFrequency": "weekly",
+      "priority": 0.878,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "agent-management-workbench",
+      "kind": "agentManagementWorkbench",
+      "path": "/agent-management-workbench",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "product-detail",
+      "cluster": "product-core",
+      "parentHub": "capabilities",
+      "navTier": 2,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "capabilities",
+        "local-deployment",
+        "fde-ai-delivery",
+        "ai-workbench-for-indie-developers",
+        "ai-partner-for-founders"
+      ],
+      "schemaTypes": [
+        "WebPage",
+        "SoftwareApplication",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "product-evidence",
+      "visualProfile": "agent-console",
+      "changeFrequency": "weekly",
+      "priority": 0.875,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "solutions",
+      "path": "/solutions",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "hub",
+      "cluster": "solutions",
+      "parentHub": null,
+      "navTier": 1,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "changeFrequency": "weekly",
+      "priority": 0.872,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "fde-ai-delivery",
+      "kind": "fdeDelivery",
+      "path": "/fde-ai-delivery",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "solution-hub",
+      "cluster": "solution-fde",
+      "parentHub": "solutions",
+      "navTier": 2,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "fde-local-ai-delivery",
+        "fde-client-handoff-playbook",
+        "agent-management-workbench",
+        "local-deployment",
+        "ai-workbench-for-indie-developers"
+      ],
+      "schemaTypes": [
+        "WebPage",
+        "SoftwareApplicationRef",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "solution-evidence",
+      "visualProfile": "partner-ready",
+      "changeFrequency": "weekly",
+      "priority": 0.87,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "fde-local-ai-delivery",
+      "kind": "fdeLocalAiDelivery",
+      "path": "/fde-local-ai-delivery",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "workflow",
+      "cluster": "solution-fde",
+      "parentHub": "fde-ai-delivery",
+      "navTier": 3,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "fde-ai-delivery",
+        "fde-client-handoff-playbook",
+        "local-deployment",
+        "agent-management-workbench"
+      ],
+      "schemaTypes": [
+        "WebPage",
+        "HowTo",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "workflow-rail",
+      "visualProfile": "local-workspace",
+      "changeFrequency": "weekly",
+      "priority": 0.868,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "fde-client-handoff-playbook",
+      "kind": "fdeClientHandoffPlaybook",
+      "path": "/fde-client-handoff-playbook",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "playbook",
+      "cluster": "solution-fde",
+      "parentHub": "fde-ai-delivery",
+      "navTier": 3,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "fde-local-ai-delivery",
+        "fde-ai-delivery",
+        "agent-management-workbench",
+        "indie-agent-demo-to-maintenance"
+      ],
+      "schemaTypes": [
+        "Article",
+        "HowTo",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "editorial-guide",
+      "visualProfile": "patrol-console",
+      "changeFrequency": "weekly",
+      "priority": 0.866,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "fde-ai-delivery-checklist",
+      "kind": "fdeAiDeliveryChecklist",
+      "path": "/fde-ai-delivery-checklist",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "workflow",
+      "cluster": "solution-fde",
+      "parentHub": "fde-ai-delivery",
+      "navTier": 3,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "fde-ai-delivery",
+        "fde-local-ai-delivery",
+        "fde-client-handoff-playbook",
+        "agent-management-workbench",
+        "download"
+      ],
+      "schemaTypes": [
+        "WebPage",
+        "HowTo",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "workflow-rail",
+      "visualProfile": "fde-delivery-checklist-console",
+      "changeFrequency": "weekly",
+      "priority": 0.867,
+      "lastModified": "2026-08-10"
+    },
+    {
+      "id": "ai-workbench-for-indie-developers",
+      "kind": "indieDevelopers",
+      "path": "/ai-workbench-for-indie-developers",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "solution-hub",
+      "cluster": "solution-indie",
+      "parentHub": "solutions",
+      "navTier": 2,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "indie-agent-workbench",
+        "agent-management-workbench-checklist",
+        "agent-management-workbench-common-mistakes",
+        "local-ai-agent-platform-vs-cloud",
+        "agent-management-workbench"
+      ],
+      "schemaTypes": [
+        "WebPage",
+        "SoftwareApplicationRef",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "solution-evidence",
+      "visualProfile": "agent-console",
+      "changeFrequency": "weekly",
+      "priority": 0.86,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "indie-agent-workbench",
+      "kind": "indieAgentWorkbench",
+      "path": "/indie-agent-workbench",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "workflow",
+      "cluster": "solution-indie",
+      "parentHub": "ai-workbench-for-indie-developers",
+      "navTier": 3,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "ai-workbench-for-indie-developers",
+        "agent-management-workbench-checklist",
+        "indie-agent-demo-to-maintenance",
+        "local-ai-agent-platform-vs-cloud",
+        "agent-management-workbench"
+      ],
+      "schemaTypes": [
+        "WebPage",
+        "HowTo",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "workflow-rail",
+      "visualProfile": "agent-console",
+      "changeFrequency": "weekly",
+      "priority": 0.858,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "agent-management-workbench-checklist",
+      "kind": "agentManagementWorkbenchChecklist",
+      "path": "/agent-management-workbench-checklist",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "workflow",
+      "cluster": "solution-indie",
+      "parentHub": "ai-workbench-for-indie-developers",
+      "navTier": 3,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "ai-workbench-for-indie-developers",
+        "agent-management-workbench",
+        "indie-agent-workbench",
+        "local-ai-agent-platform-vs-cloud",
+        "download"
+      ],
+      "schemaTypes": [
+        "WebPage",
+        "HowTo",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "workflow-rail",
+      "visualProfile": "workflow-checklist-console",
+      "changeFrequency": "weekly",
+      "priority": 0.859,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "agent-management-workbench-common-mistakes",
+      "kind": "agentManagementWorkbenchCommonMistakes",
+      "path": "/agent-management-workbench-common-mistakes",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "workflow",
+      "cluster": "solution-indie",
+      "parentHub": "ai-workbench-for-indie-developers",
+      "navTier": 3,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "ai-workbench-for-indie-developers",
+        "agent-management-workbench",
+        "agent-management-workbench-checklist",
+        "indie-agent-workbench",
+        "download"
+      ],
+      "schemaTypes": [
+        "WebPage",
+        "HowTo",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "workflow-rail",
+      "visualProfile": "workflow-mistakes-console",
+      "changeFrequency": "weekly",
+      "priority": 0.859,
+      "lastModified": "2026-07-17"
+    },
+    {
+      "id": "indie-agent-demo-to-maintenance",
+      "kind": "indieAgentDemoToMaintenance",
+      "path": "/indie-agent-demo-to-maintenance",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "playbook",
+      "cluster": "solution-indie",
+      "parentHub": "ai-workbench-for-indie-developers",
+      "navTier": 3,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "indie-agent-workbench",
+        "local-ai-agent-platform-vs-cloud",
+        "ai-workbench-for-indie-developers",
+        "fde-client-handoff-playbook",
+        "agent-management-workbench"
+      ],
+      "schemaTypes": [
+        "Article",
+        "HowTo",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "editorial-guide",
+      "visualProfile": "patrol-console",
+      "changeFrequency": "weekly",
+      "priority": 0.857,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "local-ai-agent-platform-vs-cloud",
+      "kind": "localAiAgentPlatformComparison",
+      "path": "/local-ai-agent-platform-vs-cloud",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "comparison",
+      "cluster": "solution-indie",
+      "parentHub": "ai-workbench-for-indie-developers",
+      "navTier": 3,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "ai-workbench-for-indie-developers",
+        "local-deployment",
+        "agent-management-workbench",
+        "indie-agent-workbench",
+        "capabilities"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "comparison-guide",
+      "visualProfile": "local-agent-console",
+      "changeFrequency": "weekly",
+      "priority": 0.856,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "opc-content-ops-system",
+      "kind": "opcOperators",
+      "path": "/opc-content-ops-system",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "solution-hub",
+      "cluster": "solution-operations",
+      "parentHub": "solutions",
+      "navTier": 2,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "opc-ai-content-calendar-workflow",
+        "capabilities",
+        "agent-management-workbench",
+        "founder-ai-employee-first-workflow"
+      ],
+      "schemaTypes": [
+        "WebPage",
+        "SoftwareApplicationRef",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "solution-evidence",
+      "visualProfile": "partner-ready",
+      "changeFrequency": "weekly",
+      "priority": 0.855,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "opc-ai-content-calendar-workflow",
+      "kind": "opcAiContentCalendarWorkflow",
+      "path": "/opc-ai-content-calendar-workflow",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "workflow",
+      "cluster": "solution-operations",
+      "parentHub": "opc-content-ops-system",
+      "navTier": 3,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "opc-content-ops-system",
+        "founder-ai-employee-first-workflow",
+        "founder-ai-decision-workflow",
+        "capabilities"
+      ],
+      "schemaTypes": [
+        "WebPage",
+        "HowTo",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "workflow-rail",
+      "visualProfile": "agent-console",
+      "changeFrequency": "weekly",
+      "priority": 0.854,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "ai-employee-vs-hiring-assistant",
+      "kind": "founderAiEmployeeComparison",
+      "path": "/ai-employee-vs-hiring-assistant",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "comparison",
+      "cluster": "solution-founder",
+      "parentHub": "ai-partner-for-founders",
+      "navTier": 3,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "ai-partner-for-founders",
+        "founder-ai-employee-first-workflow",
+        "founder-ai-decision-workflow",
+        "download"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "comparison-guide",
+      "visualProfile": "agent-console",
+      "changeFrequency": "weekly",
+      "priority": 0.851,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "ai-partner-for-founders",
+      "kind": "founders",
+      "path": "/ai-partner-for-founders",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "solution-hub",
+      "cluster": "solution-founder",
+      "parentHub": "solutions",
+      "navTier": 2,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "founder-ai-employee-first-workflow",
+        "founder-ai-decision-workflow",
+        "ai-employee-vs-hiring-assistant",
+        "capabilities",
+        "download"
+      ],
+      "schemaTypes": [
+        "WebPage",
+        "SoftwareApplicationRef",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "solution-evidence",
+      "visualProfile": "agent-console",
+      "changeFrequency": "weekly",
+      "priority": 0.85,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "founder-ai-decision-workflow",
+      "kind": "founderDecisionWorkflow",
+      "path": "/founder-ai-decision-workflow",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "workflow",
+      "cluster": "solution-founder",
+      "parentHub": "ai-partner-for-founders",
+      "navTier": 3,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "ai-partner-for-founders",
+        "founder-ai-employee-first-workflow",
+        "ai-employee-vs-hiring-assistant",
+        "opc-ai-content-calendar-workflow"
+      ],
+      "schemaTypes": [
+        "WebPage",
+        "HowTo",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "workflow-rail",
+      "visualProfile": "agent-console",
+      "changeFrequency": "weekly",
+      "priority": 0.849,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "founder-ai-employee-first-workflow",
+      "kind": "founderFirstWorkflow",
+      "path": "/founder-ai-employee-first-workflow",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "workflow",
+      "cluster": "solution-founder",
+      "parentHub": "ai-partner-for-founders",
+      "navTier": 3,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "relatedIds": [
+        "ai-partner-for-founders",
+        "founder-ai-decision-workflow",
+        "ai-employee-vs-hiring-assistant",
+        "download",
+        "agent-management-workbench"
+      ],
+      "schemaTypes": [
+        "WebPage",
+        "HowTo",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "layoutRecipe": "workflow-rail",
+      "visualProfile": "agent-console",
+      "changeFrequency": "weekly",
+      "priority": 0.848,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "workflows",
+      "path": "/workflows",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "hub",
+      "cluster": "workflows",
+      "parentHub": null,
+      "navTier": 1,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "changeFrequency": "weekly",
+      "priority": 0.84,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "resources",
+      "path": "/resources",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "hub",
+      "cluster": "resources",
+      "parentHub": null,
+      "navTier": 1,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "changeFrequency": "weekly",
+      "priority": 0.84,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "blog",
+      "path": "/blog",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "content-index",
+      "cluster": "resources",
+      "parentHub": "resources",
+      "navTier": 2,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "changeFrequency": "weekly",
+      "priority": 0.84,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "docs",
+      "path": "/docs",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "content-index",
+      "cluster": "resources",
+      "parentHub": "resources",
+      "navTier": 2,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "changeFrequency": "weekly",
+      "priority": 0.84,
+      "lastModified": "2026-07-15"
+    },
+    {
+      "id": "privacy",
+      "path": "/privacy",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "legal",
+      "cluster": "legal",
+      "parentHub": null,
+      "navTier": 3,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "changeFrequency": "monthly",
+      "priority": 0.3,
+      "lastModified": "2026-06-10"
+    },
+    {
+      "id": "terms-of-service",
+      "path": "/terms-of-service",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "legal",
+      "cluster": "legal",
+      "parentHub": null,
+      "navTier": 3,
+      "indexPolicy": "index",
+      "sitemap": true,
+      "changeFrequency": "monthly",
+      "priority": 0.3,
+      "lastModified": "2026-06-10"
+    },
+    {
+      "id": "account-membership",
+      "path": "/account/membership",
+      "locales": [
+        "zh",
+        "en"
+      ],
+      "pageType": "account",
+      "cluster": "protected",
+      "parentHub": null,
+      "navTier": 0,
+      "indexPolicy": "noindex",
+      "sitemap": false,
+      "changeFrequency": "monthly",
+      "priority": 0,
+      "lastModified": "2026-07-15"
+    }
+  ]
+}

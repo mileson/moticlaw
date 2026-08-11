@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "product": "MotiClaw",
+  "version": "0.2.1",
+  "tag": "v0.2.1",
+  "release_date": "2026-06-13",
+  "brand_profile": "standard",
+  "backend_profile": "production",
+  "backend_base_url": "https://api.moticlaw.com",
+  "display_version": "v0.2.1 (2026.6.13)",
+  "release_name": "MotiClaw v0.2.1 (2026.6.13)",
+  "generated_at": "2026-06-13T11:56:27.311Z",
+  "release_base_url": "https://cdn.moticlaw.com/desktop/releases",
+  "release_url": "https://cdn.moticlaw.com/desktop/releases/v0.2.1/manifest.json",
+  "latest_url": "https://cdn.moticlaw.com/desktop/releases/latest.json",
+  "download_base_url": "https://cdn.moticlaw.com/desktop/releases/v0.2.1/",
+  "checksums_url": "https://cdn.moticlaw.com/desktop/releases/v0.2.1/checksums.sha256",
+  "latest_checksums_url": "https://cdn.moticlaw.com/desktop/releases/checksums.txt",
+  "layout": {
+    "root": "v0.2.1",
+    "channel_root": ".",
+    "pattern": "MotiClaw-v{version}-{platform}-{arch}[-{brand}][-{variant}].{ext}",
+    "platforms": [
+      "macos",
+      "windows"
+    ],
+    "architectures": [
+      "arm64",
+      "x64"
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "macos-arm64-dmg",
+      "platform": "macos",
+      "arch": "arm64",
+      "variant": "dmg",
+      "display_name": "macOS Apple Silicon",
+      "filename": "MotiClaw-v0.2.1-macos-arm64.dmg",
+      "relative_path": "macos/arm64/MotiClaw-v0.2.1-macos-arm64.dmg",
+      "size_bytes": 284658879,
+      "sha256": "dafb01efa9f99cfc0551a17d8f2e2c4f6a4a85d5021e030c4d1c12402ad1c933",
+      "recommended_for": [
+        "darwin-arm64"
+      ],
+      "notarization": {
+        "status": "Accepted",
+        "submission_id": "1fc979e4-c23a-4372-ac8a-deddb147fb38",
+        "stapled": true,
+        "gatekeeper": "accepted",
+        "source": "Notarized Developer ID"
+      },
+      "url": "https://cdn.moticlaw.com/desktop/releases/v0.2.1/macos/arm64/MotiClaw-v0.2.1-macos-arm64.dmg"
+    },
+    {
+      "id": "macos-x64-dmg",
+      "platform": "macos",
+      "arch": "x64",
+      "variant": "dmg",
+      "display_name": "macOS Intel",
+      "filename": "MotiClaw-v0.2.1-macos-x64.dmg",
+      "relative_path": "macos/x64/MotiClaw-v0.2.1-macos-x64.dmg",
+      "size_bytes": 291745373,
+      "sha256": "b07bc32f486c74b806a8def33437b6ab7be770902837d6594860af509c838c51",
+      "recommended_for": [
+        "darwin-x64"
+      ],
+      "notarization": {
+        "status": "Accepted",
+        "submission_id": "71824e11-3945-4795-80cd-812202089be7",
+        "stapled": true,
+        "gatekeeper": "accepted",
+        "source": "Notarized Developer ID"
+      },
+      "url": "https://cdn.moticlaw.com/desktop/releases/v0.2.1/macos/x64/MotiClaw-v0.2.1-macos-x64.dmg"
+    },
+    {
+      "id": "windows-x64-portable",
+      "platform": "windows",
+      "arch": "x64",
+      "variant": "portable",
+      "display_name": "Windows x64（兼容 ARM64） 便携版",
+      "filename": "MotiClaw-v0.2.1-windows-x64-portable.exe",
+      "relative_path": "windows/x64/MotiClaw-v0.2.1-windows-x64-portable.exe",
+      "size_bytes": 246221968,
+      "sha256": "ea2cee616b04797e6b7dfbf516ab71a0e1ce173d750fe6cbe18858babd8e8f96",
+      "recommended_for": [
+        "win32-x64",
+        "win32-arm64"
+      ],
+      "url": "https://cdn.moticlaw.com/desktop/releases/v0.2.1/windows/x64/MotiClaw-v0.2.1-windows-x64-portable.exe"
+    },
+    {
+      "id": "windows-x64-setup",
+      "platform": "windows",
+      "arch": "x64",
+      "variant": "setup",
+      "display_name": "Windows x64（兼容 ARM64） 安装版",
+      "filename": "MotiClaw-v0.2.1-windows-x64-setup.exe",
+      "relative_path": "windows/x64/MotiClaw-v0.2.1-windows-x64-setup.exe",
+      "size_bytes": 246436726,
+      "sha256": "3760dc050bc62e8cb2d81277376a774ddd2686ed8178c77471462f52e0f71f42",
+      "recommended_for": [
+        "win32-x64",
+        "win32-arm64"
+      ],
+      "url": "https://cdn.moticlaw.com/desktop/releases/v0.2.1/windows/x64/MotiClaw-v0.2.1-windows-x64-setup.exe"
+    }
+  ]
+}
