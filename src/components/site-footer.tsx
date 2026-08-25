@@ -45,6 +45,8 @@ function footerColumns(locale: Locale): FooterColumn[] {
           { label: "博客", href: `/blog${q}` },
           { label: "产品文档", href: `/docs${q}` },
           { label: "快速开始", href: `/docs/quickstart${q}` },
+          { label: "关于 MotiClaw · About", href: `/about${q}` },
+          { label: "联系我们 · Contact", href: `/contact${q}` },
           { label: "隐私政策", href: `/privacy${q}` },
           { label: "服务条款", href: `/terms-of-service${q}` },
         ],
@@ -91,6 +93,8 @@ function footerColumns(locale: Locale): FooterColumn[] {
         { label: "Blog", href: `/blog${q}` },
         { label: "Documentation", href: `/docs${q}` },
         { label: "Quickstart", href: `/docs/quickstart${q}` },
+        { label: "About MotiClaw", href: `/about${q}` },
+        { label: "Contact", href: `/contact${q}` },
         { label: "Privacy", href: `/privacy${q}` },
         { label: "Terms of service", href: `/terms-of-service${q}` },
       ],
@@ -99,8 +103,8 @@ function footerColumns(locale: Locale): FooterColumn[] {
 }
 
 const taglines: Record<Locale, string> = {
-  zh: "一个人，3 分钟搭建本地 AI 伙伴团队。数据留在你自己的设备上。",
-  en: "Build your local AI partner team in 3 minutes. Your data stays on your device.",
+  zh: "灵感、创作与发布，一站完成。数据默认留在你的设备上。",
+  en: "Ideas, creation, and publishing in one place. Your data stays on your device.",
 };
 
 export function SiteFooter({ locale }: { locale: Locale }) {
@@ -128,7 +132,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
                   <li key={link.href + link.label}>
                     <a
                       href={link.href}
-                      className="font-medium text-[var(--foreground)] transition hover:text-[var(--accent-strong)]"
+                      className="inline-flex min-h-6 items-center font-medium text-[var(--foreground)] transition hover:text-[var(--accent-strong)]"
                       {...(link.external ? { target: "_blank", rel: "noreferrer" } : {})}
                     >
                       {link.label}

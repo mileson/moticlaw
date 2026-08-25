@@ -1087,8 +1087,8 @@ export const blogPosts: BlogPost[] = [
       en: "Why We Insist on Local-First: How MotiClaw Draws the Data Boundary",
     },
     description: {
-      zh: "客户资料、报价、未发布的计划，不该为了用上 AI 而离开你的电脑。这篇文章讲清 MotiClaw 的本地优先架构：什么留在本地、什么走网络、托管模型限额怎么算。",
-      en: "Client files, quotes, and unreleased plans should not leave your computer just to use AI. This post explains MotiClaw's local-first architecture: what stays local, what goes over the network, and how limits work.",
+      zh: "客户资料、报价、未发布的计划，不该为了用上 AI 而离开你的电脑。这篇文章讲清 MotiClaw 的本地优先架构：什么留在本地、什么走网络，以及如何选择托管模型额度。",
+      en: "Client files, quotes, and unreleased plans should not leave your computer just to use AI. This post explains MotiClaw's local-first architecture: what stays local, what goes over the network, and how to choose a hosted-model allowance.",
     },
     content: {
       zh: (
@@ -1106,9 +1106,9 @@ export const blogPosts: BlogPost[] = [
           <p className={p}>
             只有两类请求会出网：一是你主动接入的渠道（比如飞书消息收发），二是调用大模型推理本身。模型调用时只发送完成当前任务所需的上下文，而不是把你的资料库整体上传。你也可以接入自己的模型网关，把这条边界进一步收紧。
           </p>
-          <h2 className={h2}>托管模型与限额怎么算</h2>
+          <h2 className={h2}>如何选择托管模型额度</h2>
           <p className={p}>
-            如果你不想自己配模型，可以直接用 MotiClaw 的托管模型：免费版有基础的 5 小时与每周限额；Plus 和 Pro 订阅按月把两个窗口的限额一起拉高。所有计费都只发生在“模型调用”这一层——你的数据存储永远是免费且本地的。
+            如果你不想自己配模型，可以直接使用 MotiClaw 的托管模型。订阅套餐提供更多额度，Plus 和 Pro 对应不同的使用需求。所有计费都只发生在“模型调用”这一层——你的数据存储始终免费并保留在本地。
           </p>
           <h2 className={h2}>这对不同角色意味着什么</h2>
           <ul className={ul}>
@@ -1136,9 +1136,9 @@ export const blogPosts: BlogPost[] = [
           <p className={p}>
             Only two kinds of requests leave your machine: channels you explicitly connect (such as Feishu messaging), and model inference itself. Model calls send only the context needed for the current task - never a bulk upload of your library. You can also plug in your own model gateway to tighten the boundary further.
           </p>
-          <h2 className={h2}>How hosted models and limits work</h2>
+          <h2 className={h2}>How to choose a hosted-model allowance</h2>
           <p className={p}>
-            If you prefer not to configure models yourself, use MotiClaw&apos;s hosted models: Free includes base 5-hour and weekly limits, and Plus and Pro subscriptions raise both windows monthly. Billing only ever happens at the model-call layer - storing your data is always free and local.
+            If you prefer not to configure models yourself, use MotiClaw&apos;s hosted models. Paid plans provide more allowance, with Plus and Pro designed for different levels of use. Billing only happens at the model-call layer; storing your data stays free and local.
           </p>
           <h2 className={h2}>What this means for different roles</h2>
           <ul className={ul}>
@@ -1204,13 +1204,13 @@ export const blogPosts: BlogPost[] = [
           </p>
           <h2 className={h2}>为什么在本地跑这套流程</h2>
           <p className={p}>
-            独立开发者的反馈数据里有用户邮箱、崩溃日志，甚至还没发布的功能讨论。MotiClaw 是本地优先的：这三个 Agent 都运行在你自己的电脑上，反馈库和产品计划不需要为了“用上 AI”而上传给第三方。模型调用只发送当前任务需要的上下文，托管模型的限额规则见<span className={strong}>《为什么我们坚持本地优先》</span>一文。
+            独立开发者的反馈数据里有用户邮箱、崩溃日志，甚至还没发布的功能讨论。MotiClaw 是本地优先的：这三个 Agent 都运行在你自己的电脑上，反馈库和产品计划不需要为了“用上 AI”而上传给第三方。模型调用只发送当前任务需要的上下文，托管模型额度说明见<span className={strong}>《为什么我们坚持本地优先》</span>一文。
           </p>
           <h2 className={h2}>今天就能开始的最小配置</h2>
           <ul className={ul}>
             <li>下载 MotiClaw，在 Agent 工区领取一个“反馈归类”类 Agent——这是性价比最高的第一步。</li>
             <li>跑顺一周后，再加答疑初稿员；等你信任它的草稿质量，再加发布清单员。</li>
-            <li>三个伙伴都稳定后，免费版限额如果不够，再考虑 Plus 订阅，不用一开始就付费。</li>
+            <li>三个伙伴都稳定后，如果需要更多托管模型额度，再考虑 Plus 订阅，不用一开始就付费。</li>
           </ul>
         </>
       ),
@@ -1238,13 +1238,13 @@ export const blogPosts: BlogPost[] = [
           </p>
           <h2 className={h2}>Why run this locally</h2>
           <p className={p}>
-            Indie feedback data contains user emails, crash logs, and discussions of unreleased features. MotiClaw is local-first: all three agents run on your own machine, and your feedback corpus never has to be uploaded to a third party just to &quot;use AI&quot;. Model calls send only the context the current task needs - see our local-first post for how hosted-model limits work.
+            Indie feedback data contains user emails, crash logs, and discussions of unreleased features. MotiClaw is local-first: all three agents run on your own machine, and your feedback corpus never has to be uploaded to a third party just to &quot;use AI&quot;. Model calls send only the context the current task needs - see our local-first post for how hosted-model allowance works.
           </p>
           <h2 className={h2}>The minimal setup you can start today</h2>
           <ul className={ul}>
             <li>Download MotiClaw and claim a feedback-triage agent in the workspace - the highest-leverage first step.</li>
             <li>After a smooth week, add the support drafter; once you trust its drafts, add the release checklister.</li>
-            <li>Only consider a Plus subscription when the free hosted-model limits actually get in your way.</li>
+            <li>Only consider a Plus subscription when you need more hosted-model allowance.</li>
           </ul>
         </>
       ),

@@ -1,19 +1,3 @@
-/*
-## 核心功能
-为零水合的官网营销页（首页 / pricing / blog / docs）提供全部交互：主题切换、语言菜单、下载/视频/二维码弹窗、首页 AI 伙伴卡片演示、平台检测推荐下载、英雄视频懒加载与顶栏滚动钉住。
-## 输入
-读取页面内的交互钩子（id/data-* 属性）与 `#landing-data` JSON（发布清单与本地化文案）。
-## 输出
-为静态标记绑定原生事件监听；不依赖任何框架运行时。
-## 定位
-位于 `public/`，以 `<script defer>` 注入营销页，是零水合架构下唯一的页面脚本。
-## 依赖
-只依赖浏览器原生 API（DOM、localStorage、matchMedia、IntersectionObserver），不依赖任何框架运行时。
-## 维护规则
-- 任何静态组件新增交互钩子时，必须同步在此实现并保持元素缺失时静默跳过。
-- 首页 AI 伙伴演示只做写死数据和浏览器内即时反馈，不接真实账号、后端或持久化存储。
-- 修改平台检测或推荐下载逻辑时，必须与 `moticlaw-landing-static.tsx` 的数据契约保持一致。
-*/
 (function () {
   "use strict";
 
@@ -44,15 +28,14 @@
     themeToggle.addEventListener("click", function (event) {
       var next = resolvedTheme() === "dark" ? "light" : "dark";
       var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      var compact = window.innerWidth < 768;
-
-      if (!document.startViewTransition || reduceMotion || compact) {
+      if (!document.startViewTransition || reduceMotion) {
         applyTheme(next);
         return;
       }
 
-      var x = event.clientX;
-      var y = event.clientY;
+      var toggleRect = themeToggle.getBoundingClientRect();
+      var x = event.clientX || toggleRect.left + toggleRect.width / 2;
+      var y = event.clientY || toggleRect.top + toggleRect.height / 2;
       var endRadius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
 
       var transition = document.startViewTransition(function () {
@@ -157,7 +140,9 @@
     localeMenu.style.right = Math.max(16, window.innerWidth - rect.right) + "px";
     localeMenu.hidden = false;
     if (localeBackdrop) {
-      localeBackdrop.style.top = "0px";
+      var header = $("site-header-shell");
+      var backdropTop = header ? Math.max(0, header.getBoundingClientRect().bottom) : 0;
+      localeBackdrop.style.top = backdropTop + "px";
       localeBackdrop.hidden = false;
     }
     localeToggle.setAttribute("aria-expanded", "true");
@@ -199,6 +184,38 @@
     } else {
       window.addEventListener("load", schedulePinnedState, { once: true });
     }
+  }
+
+  /* ---------------- Pricing billing period ---------------- */
+  var pricingPeriodSwitch = document.querySelector("[data-pricing-period-switch]");
+  var pricingPlanGrid = document.querySelector("[data-pricing-plan-grid]");
+  if (pricingPeriodSwitch && pricingPlanGrid) {
+    var pricingPeriodButtons = Array.prototype.slice.call(
+      pricingPeriodSwitch.querySelectorAll("[data-pricing-period-toggle]")
+    );
+    var pricingPlanCards = Array.prototype.slice.call(
+      pricingPlanGrid.querySelectorAll("[data-pricing-plan-period]")
+    );
+
+    var setPricingPeriod = function (period) {
+      if (period !== "monthly" && period !== "annual") return;
+      pricingPlanGrid.dataset.pricingPeriod = period;
+      pricingPeriodButtons.forEach(function (button) {
+        var active = button.getAttribute("data-pricing-period-toggle") === period;
+        button.setAttribute("aria-pressed", String(active));
+        button.setAttribute("data-active", String(active));
+      });
+      pricingPlanCards.forEach(function (card) {
+        card.hidden = card.getAttribute("data-pricing-plan-period") !== period;
+      });
+    };
+
+    pricingPeriodButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        setPricingPeriod(button.getAttribute("data-pricing-period-toggle"));
+      });
+    });
+    setPricingPeriod("monthly");
   }
 
   /* ---------------- Modal manager ---------------- */
@@ -337,27 +354,11 @@
     return (landingData && landingData.locale === "zh") || document.documentElement.lang === "zh";
   }
 
-  function parseJsonAttr(el, name, fallback) {
-    try {
-      return JSON.parse(el.getAttribute(name) || "");
-    } catch {
-      return fallback;
-    }
-  }
-
   function partnerPayloadFromButton(button) {
-    return {
-      action: button.getAttribute("data-console-action") || "skills",
-      name: button.getAttribute("data-partner-name") || "",
-      role: button.getAttribute("data-partner-role") || "",
-      status: button.getAttribute("data-partner-status") || "",
-      channel: button.getAttribute("data-partner-channel") || "",
-      avatarUrl: button.getAttribute("data-partner-avatar") || "",
-      skills: parseJsonAttr(button, "data-partner-skills", []),
-      tasks: parseJsonAttr(button, "data-partner-tasks", []),
-      activities: parseJsonAttr(button, "data-partner-activities", []),
-      configItems: parseJsonAttr(button, "data-partner-config", []),
-    };
+    var partnerKey = button.getAttribute("data-partner-key") || "";
+    var partner = landingData && landingData.partners ? landingData.partners[partnerKey] : null;
+    if (!partner) return null;
+    return Object.assign({ action: button.getAttribute("data-console-action") || "skills" }, partner);
   }
 
   function setPartnerModalHeader(payload, title) {
@@ -1038,6 +1039,7 @@
   document.querySelectorAll("[data-console-action]").forEach(function (button) {
     button.addEventListener("click", function () {
       var payload = partnerPayloadFromButton(button);
+      if (!payload) return;
       if (payload.action === "tasks") renderTasks(payload);
       else if (payload.action === "activity") renderActivity(payload);
       else if (payload.action === "chat") renderChat(payload);

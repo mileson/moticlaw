@@ -8,13 +8,13 @@ import { MotiClawLandingStatic } from "@/components/moticlaw-landing-static";
 type HomeSearchParams = Promise<{ lang?: string }>;
 
 const homeTitles: Record<Locale, string> = {
-  zh: "MotiClaw 官网 - 本地 AI 伙伴与智能体控制平台",
-  en: "MotiClaw - Local-First AI Partner & Agent Control Platform",
+  zh: "MotiClaw｜本地内容创作 AI 工作台",
+  en: "MotiClaw | Local AI Content Creation Workspace",
 };
 
 const homeDescriptions: Record<Locale, string> = {
-  zh: "MotiClaw 是一个本地优先的 AI 伙伴与智能体控制平台，支持 macOS 与 Windows 下载部署。适合 FDE、老板、超级个体和 AI 独立开发者，用一个平台完成本地部署、Agent 管理和 AI 助手团队协作。",
-  en: "MotiClaw is a local-first AI partner and agent control platform for macOS and Windows. Built for FDEs, founders, solo builders, and indie AI developers to deploy locally, manage agents, and run an AI assistant team from one place.",
+  zh: "MotiClaw 是本地内容创作 AI 工作台，把灵感、素材、创作与发布收进一个本地工作空间，让 AI 完成大部分内容创作执行，数据默认留在你的设备上。",
+  en: "MotiClaw is a local AI content creation workspace that brings ideas, source material, creation, and publishing into one place while your data stays on your device.",
 };
 
 function resolveHomeLocale(langParam: string | undefined, acceptLanguage: string | null): Locale {
@@ -74,11 +74,13 @@ export default async function Home({ searchParams }: { searchParams: HomeSearchP
 
   const siteUrl = "https://www.moticlaw.com/";
   const siteDescription = homeDescriptions[locale];
+  const founderId = "https://www.moticlaw.com/#founder";
+  const organizationId = "https://www.moticlaw.com/#organization";
   const jsonLd = [
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      name: locale === "zh" ? "MotiClaw 官网" : "MotiClaw",
+      name: "MotiClaw",
       alternateName: "MotiClaw",
       url: siteUrl,
       inLanguage: ["zh-CN", "en"],
@@ -87,10 +89,41 @@ export default async function Home({ searchParams }: { searchParams: HomeSearchP
     {
       "@context": "https://schema.org",
       "@type": "Organization",
-      "@id": "https://www.moticlaw.com/#organization",
+      "@id": organizationId,
       name: "MotiClaw",
       url: siteUrl,
       logo: "https://www.moticlaw.com/icon-512.png",
+      sameAs: ["https://x.com/Mileson07"],
+      founder: { "@id": founderId },
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "customer support",
+        email: "chaojifeng@shadowlaws.com",
+        url: "https://www.moticlaw.com/contact",
+        availableLanguage: ["zh-CN", "en"],
+      },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "@id": founderId,
+      name: "超级峰",
+      url: "https://www.moticlaw.com/about",
+      sameAs: ["https://x.com/Mileson07"],
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://www.moticlaw.com/#webpage",
+      url: siteUrl,
+      name: homeTitles[locale],
+      description: siteDescription,
+      inLanguage: locale === "zh" ? "zh-CN" : "en",
+      datePublished: "2026-08-18",
+      dateModified: "2026-08-18",
+      author: { "@id": founderId },
+      publisher: { "@id": organizationId },
+      about: { "@id": organizationId },
     },
     siteFaqJsonLd(locale),
     {
@@ -98,7 +131,7 @@ export default async function Home({ searchParams }: { searchParams: HomeSearchP
       "@type": "SoftwareApplication",
       name: "MotiClaw",
       url: siteUrl,
-      applicationCategory: "BusinessApplication",
+      applicationCategory: "MultimediaApplication",
       operatingSystem: "macOS, Windows",
       softwareVersion: releaseManifest.version,
       inLanguage: ["zh-CN", "en"],
@@ -113,7 +146,8 @@ export default async function Home({ searchParams }: { searchParams: HomeSearchP
       },
       featureList: [
         "本地优先，数据留在本机",
-        "支持 Agent 团队安装、配置和日常运维",
+        "统一整理灵感、素材与创作任务",
+        "用 AI 协助完成内容创作与发布准备",
         "支持 macOS 与 Windows 下载部署",
       ],
     },

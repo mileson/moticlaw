@@ -7,6 +7,7 @@ import {
   normalizeReturnToPath,
   readSiteAuthSession,
   resolveTurnstileWidgetConfig,
+  unauthenticatedSession,
   type SiteAuthPageMode,
 } from "@/lib/site-auth";
 
@@ -22,11 +23,12 @@ export default async function AuthPage({
   params: Promise<{ authPage: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const [{ authPage }, rawSearchParams, requestHeaders, viewerSession] = await Promise.all([
-    params,
+  const { authPage } = await params;
+  const earlyPageMode = normalizeAuthPageMode(authPage);
+  const [rawSearchParams, requestHeaders, viewerSession] = await Promise.all([
     searchParams,
     headers(),
-    readSiteAuthSession(),
+    earlyPageMode === "login" ? readSiteAuthSession() : Promise.resolve(unauthenticatedSession()),
   ]);
 
   if (authPage === "auth") {
@@ -35,7 +37,7 @@ export default async function AuthPage({
     notFound();
   }
 
-  const pageMode = normalizeAuthPageMode(authPage);
+  const pageMode = earlyPageMode;
   if (!pageMode) notFound();
 
   const requestedLanguage = firstString(rawSearchParams.lang);

@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { headers } from "next/headers";
-import { detectLocale, type Locale } from "@/lib/locale";
+import type { Locale } from "@/lib/locale";
 import { blogPosts } from "@/lib/blog-posts";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeaderStatic } from "@/components/site-header-static";
+import { resolveSeoLocale, type SeoSearchParams } from "@/components/seo-resource-locale";
+import { getCanonicalPath, getLanguageAlternates, toAbsoluteSiteUrl } from "@/components/seo-resource-manifest";
 
-type BlogSearchParams = Promise<{ lang?: string }>;
+type BlogSearchParams = SeoSearchParams;
 
 const titles: Record<Locale, string> = {
   zh: "博客 - MotiClaw 本地 AI 伙伴实践与产品动态",
@@ -18,33 +19,20 @@ const descriptions: Record<Locale, string> = {
   en: "The official MotiClaw blog: getting-started guides, best practices, local-first architecture deep dives, and product updates for FDEs, founders, solo operators, and indie AI developers.",
 };
 
-function resolveLocale(langParam: string | undefined, acceptLanguage: string | null): Locale {
-  if (langParam === "en") return "en";
-  if (langParam === "zh") return "zh";
-  return detectLocale(acceptLanguage);
-}
-
 export async function generateMetadata({ searchParams }: { searchParams: BlogSearchParams }): Promise<Metadata> {
-  const { lang } = await searchParams;
-  const requestHeaders = await headers();
-  const locale = resolveLocale(lang, requestHeaders.get("accept-language"));
-
-  const canonical = lang === "zh" || lang === "en" ? `/blog?lang=${lang}` : "/blog";
+  const locale = await resolveSeoLocale(searchParams);
+  const canonical = getCanonicalPath("/blog", locale);
 
   return {
     title: titles[locale],
     description: descriptions[locale],
     alternates: {
       canonical,
-      languages: {
-        "zh-CN": "/blog?lang=zh",
-        en: "/blog?lang=en",
-        "x-default": "/blog",
-      },
+      languages: getLanguageAlternates("/blog"),
     },
     openGraph: {
       type: "website",
-      url: "/blog",
+      url: canonical,
       siteName: "MotiClaw",
       title: titles[locale],
       description: descriptions[locale],
@@ -69,23 +57,22 @@ function formatDate(value: string, locale: Locale) {
 }
 
 export default async function BlogIndexPage({ searchParams }: { searchParams: BlogSearchParams }) {
-  const { lang } = await searchParams;
-  const requestHeaders = await headers();
-  const locale = resolveLocale(lang, requestHeaders.get("accept-language"));
+  const locale = await resolveSeoLocale(searchParams);
   const posts = [...blogPosts].sort((a, b) => (a.date < b.date ? 1 : -1));
+  const canonicalPath = getCanonicalPath("/blog", locale);
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Blog",
     name: titles[locale],
-    url: "https://www.moticlaw.com/blog",
+    url: toAbsoluteSiteUrl(canonicalPath),
     description: descriptions[locale],
     blogPost: posts.map((post) => ({
       "@type": "BlogPosting",
       headline: post.title[locale],
       datePublished: post.date,
       dateModified: post.updatedAt,
-      url: `https://www.moticlaw.com/blog/${post.slug}`,
+      url: toAbsoluteSiteUrl(getCanonicalPath(`/blog/${post.slug}`, locale)),
       image: `https://www.moticlaw.com${post.cover.src}`,
     })),
   };
@@ -111,8 +98,8 @@ export default async function BlogIndexPage({ searchParams }: { searchParams: Bl
           {posts.map((post) => (
             <a
               key={post.slug}
-              href={`/blog/${post.slug}?lang=${locale}`}
-              className="group flex flex-col overflow-hidden rounded-3xl border border-[var(--line)] bg-[var(--surface)] transition hover:-translate-y-0.5 hover:border-[rgba(228,145,92,0.32)] hover:shadow-[0_16px_36px_rgba(23,20,17,0.09)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(239,123,67,0.35)]"
+              href={getCanonicalPath(`/blog/${post.slug}`, locale)}
+              className="group flex flex-col overflow-hidden rounded-3xl border border-[var(--line)] bg-[var(--surface)] transition hover:-translate-y-0.5 hover:border-[rgba(0,0,0,0.32)] hover:shadow-[0_16px_36px_rgba(23,20,17,0.09)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(0,0,0,0.35)]"
             >
               <span className="block aspect-[1200/630] overflow-hidden bg-[var(--surface-strong)]">
                 <Image

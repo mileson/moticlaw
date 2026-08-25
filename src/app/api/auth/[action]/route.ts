@@ -97,18 +97,30 @@ export async function POST(
       return json({ ok: true });
     }
 
-    if (action === "login") {
-      const clientRedirectUri = resolveClientRedirectUri(body);
-      const fallbackRedirectUri = resolveFallbackRedirectUri(body);
+    if (action === "login-request-code") {
       const turnstile = resolveTurnstileForwardContext(body, request);
-      const result = await requestSiteAuthJson<AuthSessionPayload>("/v1/auth/login", {
+      const result = await requestSiteAuthJson<AuthRegisterCodePayload>("/v1/auth/login/request-code", {
         method: "POST",
         body: {
           email: optionalString(body.email) || "",
-          password: optionalString(body.password) || "",
           channel: "web",
           turnstile_token: optionalString(body.turnstileToken ?? body.turnstile_token),
           turnstile_site_key: turnstile.siteKey,
+        },
+        headers: forwardedHeaders,
+      });
+      return json({ ok: true, message: optionalString(result.message), verification: { email: optionalString(result.email) || optionalString(body.email) || "", expiresAt: optionalString(result.expires_at) || null }, previewCode: optionalString(result.preview_code) ?? null });
+    }
+
+    if (action === "login-verify") {
+      const clientRedirectUri = resolveClientRedirectUri(body);
+      const fallbackRedirectUri = resolveFallbackRedirectUri(body);
+      const result = await requestSiteAuthJson<AuthSessionPayload>("/v1/auth/login/verify", {
+        method: "POST",
+        body: {
+          email: optionalString(body.email) || "",
+          code: optionalString(body.code) || "",
+          channel: "web",
         },
         headers: forwardedHeaders,
       });
@@ -137,8 +149,6 @@ export async function POST(
         method: "POST",
         body: {
           email: optionalString(body.email) || "",
-          password: optionalString(body.password) || "",
-          display_name: optionalString(body.displayName ?? body.display_name),
           channel: "web",
           turnstile_token: optionalString(body.turnstileToken ?? body.turnstile_token),
           turnstile_site_key: turnstile.siteKey,
@@ -282,7 +292,7 @@ export async function POST(
       }
       const cookieStore = await cookies();
       const sessionToken = cookieStore.get(siteSessionCookieName)?.value?.trim() || "";
-      const viewerSession = await readSiteAuthSession();
+      const viewerSession = await readSiteAuthSession({ purpose: "handoff" });
       if (!sessionToken || viewerSession.authenticated !== true) {
         cookieStore.delete(siteSessionCookieName);
         return json(

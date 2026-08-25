@@ -1,20 +1,15 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
-import { detectLocale, type Locale } from "@/lib/locale";
+import type { Locale } from "@/lib/locale";
 import { getBlogPost, resolveBlogPostSlug } from "@/lib/blog-posts";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeaderStatic } from "@/components/site-header-static";
+import { resolveSeoLocale, type SeoSearchParams } from "@/components/seo-resource-locale";
+import { getCanonicalPath, getLanguageAlternates, toAbsoluteSiteUrl } from "@/components/seo-resource-manifest";
 
 type BlogPostParams = Promise<{ slug: string }>;
-type BlogSearchParams = Promise<{ lang?: string }>;
-
-function resolveLocale(langParam: string | undefined, acceptLanguage: string | null): Locale {
-  if (langParam === "en") return "en";
-  if (langParam === "zh") return "zh";
-  return detectLocale(acceptLanguage);
-}
+type BlogSearchParams = SeoSearchParams;
 
 export async function generateMetadata({
   params,
@@ -24,28 +19,22 @@ export async function generateMetadata({
   searchParams: BlogSearchParams;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const { lang } = await searchParams;
+  const locale = await resolveSeoLocale(searchParams);
   const canonicalSlug = resolveBlogPostSlug(slug);
   const post = getBlogPost(canonicalSlug);
   if (!post) return {};
 
-  const requestHeaders = await headers();
-  const locale = resolveLocale(lang, requestHeaders.get("accept-language"));
   const title = `${post.title[locale]} - MotiClaw Blog`;
   const description = post.description[locale];
   const path = `/blog/${post.slug}`;
-  const canonical = lang === "zh" || lang === "en" ? `${path}?lang=${lang}` : path;
+  const canonical = getCanonicalPath(path, locale);
 
   return {
     title,
     description,
     alternates: {
       canonical,
-      languages: {
-        "zh-CN": `${path}?lang=zh`,
-        en: `${path}?lang=en`,
-        "x-default": path,
-      },
+      languages: getLanguageAlternates(path),
     },
     openGraph: {
       type: "article",
@@ -83,22 +72,20 @@ export default async function BlogPostPage({
   searchParams: BlogSearchParams;
 }) {
   const { slug } = await params;
-  const { lang } = await searchParams;
+  const locale = await resolveSeoLocale(searchParams);
   const canonicalSlug = resolveBlogPostSlug(slug);
   if (canonicalSlug !== slug) {
-    redirect(lang === "zh" || lang === "en" ? `/blog/${canonicalSlug}?lang=${lang}` : `/blog/${canonicalSlug}`);
+    redirect(getCanonicalPath(`/blog/${canonicalSlug}`, locale));
   }
 
   const post = getBlogPost(canonicalSlug);
   if (!post) notFound();
 
-  const requestHeaders = await headers();
-  const locale = resolveLocale(lang, requestHeaders.get("accept-language"));
   const relatedPosts = post.relatedSlugs
     .map((relatedSlug) => getBlogPost(resolveBlogPostSlug(relatedSlug)))
     .filter((item): item is NonNullable<typeof item> => item !== undefined && item.slug !== post.slug)
     .slice(0, 4);
-  const canonicalUrl = `https://www.moticlaw.com/blog/${post.slug}?lang=${locale}`;
+  const canonicalUrl = toAbsoluteSiteUrl(getCanonicalPath(`/blog/${post.slug}`, locale));
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -112,7 +99,7 @@ export default async function BlogPostPage({
     url: canonicalUrl,
     mainEntityOfPage: { "@type": "WebPage", "@id": canonicalUrl },
     keywords: post.tags[locale],
-    relatedLink: relatedPosts.map((item) => `https://www.moticlaw.com/blog/${item.slug}?lang=${locale}`),
+    relatedLink: relatedPosts.map((item) => toAbsoluteSiteUrl(getCanonicalPath(`/blog/${item.slug}`, locale))),
     author: { "@type": "Organization", name: "MotiClaw" },
     publisher: { "@type": "Organization", name: "MotiClaw", logo: { "@type": "ImageObject", url: "https://www.moticlaw.com/icon-512.png" } },
   };
@@ -127,7 +114,7 @@ export default async function BlogPostPage({
 
       <article className="mx-auto w-full max-w-3xl px-4 pt-[6.5rem] pb-16 sm:px-8">
         <nav className="text-sm text-[var(--muted)]" aria-label="Breadcrumb">
-          <a href={`/blog?lang=${locale}`} className="font-medium transition hover:text-[var(--accent-strong)]">
+          <a href={getCanonicalPath("/blog", locale)} className="font-medium transition hover:text-[var(--accent-strong)]">
             {locale === "zh" ? "← 返回博客" : "← Back to blog"}
           </a>
         </nav>
@@ -191,8 +178,8 @@ export default async function BlogPostPage({
               {relatedPosts.map((item) => (
                 <a
                   key={item.slug}
-                  href={`/blog/${item.slug}?lang=${locale}`}
-                  className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 transition hover:border-[rgba(228,145,92,0.32)]"
+                  href={getCanonicalPath(`/blog/${item.slug}`, locale)}
+                  className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 transition hover:border-[rgba(0,0,0,0.32)]"
                 >
                   <span className="block text-sm font-semibold leading-6 text-[var(--foreground)]">{item.title[locale]}</span>
                   <span className="mt-2 block text-xs leading-5 text-[var(--muted)]">{item.description[locale]}</span>

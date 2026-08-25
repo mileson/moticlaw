@@ -23,10 +23,10 @@ export function SiteFaqSection({ locale }: { locale: Locale }) {
           <details
             key={item.question}
             open={index === 0 ? true : undefined}
-            className="group min-w-0 rounded-2xl border border-[var(--line)] bg-[var(--surface)] px-5 py-4 shadow-[0_10px_24px_rgba(23,20,17,0.045)] transition hover:border-[rgba(228,145,92,0.32)]"
+            className="group min-w-0 rounded-2xl border border-[var(--line)] bg-[var(--surface)] px-5 py-4 shadow-[0_10px_24px_rgba(23,20,17,0.045)] transition hover:border-[rgba(0,0,0,0.32)]"
           >
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[1.02rem] font-semibold tracking-normal text-[var(--foreground)] [&::-webkit-details-marker]:hidden">
-              <span>{item.question}</span>
+              <h3 className="text-left text-[1.02rem] font-semibold tracking-normal">{item.question}</h3>
               <span
                 aria-hidden="true"
                 className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-[var(--line)] text-sm text-[var(--muted)] transition group-open:rotate-45"
@@ -39,7 +39,7 @@ export function SiteFaqSection({ locale }: { locale: Locale }) {
               <div className="mt-5 min-w-0 max-w-full overflow-x-auto rounded-lg border border-[var(--line)] bg-[var(--background)]">
                 <table className="w-full min-w-[720px] border-collapse text-left text-sm">
                   <thead>
-                    <tr className="border-b border-[var(--line)] bg-[rgba(228,145,92,0.08)] text-[var(--foreground)]">
+                    <tr className="border-b border-[var(--line)] bg-[rgba(0,0,0,0.06)] text-[var(--foreground)]">
                       <th scope="col" className="w-[22%] px-4 py-3 font-semibold">
                         {item.comparison.dimensionLabel}
                       </th>

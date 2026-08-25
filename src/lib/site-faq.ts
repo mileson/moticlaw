@@ -62,7 +62,7 @@ const faqContent: Record<Locale, SiteFaqItem[]> = {
     {
       question: "MotiClaw 是免费的吗？",
       answer:
-        "是的，MotiClaw 可以免费下载使用，免费版支持创建 8 个 AI 伙伴。如果需要更高的托管模型限额和更大的 AI 伙伴团队，可以订阅 Plus（¥39/月，16 个 AI 伙伴）或 Pro（¥199/月，32 个 AI 伙伴）套餐。",
+        "是的，MotiClaw 可以免费下载使用，免费版支持创建 8 个 AI 伙伴。如果需要更多托管模型额度和更大的 AI 伙伴团队，可以订阅 Plus（¥68/月或 ¥680/年，16 个 AI 伙伴）或 Pro（¥199/月，32 个 AI 伙伴）套餐。",
     },
     {
       question: "MotiClaw 支持哪些操作系统？",
@@ -79,9 +79,9 @@ const faqContent: Record<Locale, SiteFaqItem[]> = {
         "免费版最多创建 8 个 AI 伙伴，Plus 会员提升到 16 个，Pro 会员提升到 32 个，适合按团队规模逐步升级。",
     },
     {
-      question: "托管模型的限额是怎么计算的？",
+      question: "Plus 和 Pro 应该怎么选？",
       answer:
-        "限额按 5 小时和 7 天两个滚动窗口同时计算，每次托管模型调用各占用一次，窗口随时间自动滚动恢复。Plus 套餐为 5 小时 30 次、每周 150 次；Pro 套餐为 5 小时 100 次、每周 600 次。",
+        "Plus 和 Pro 提供不同的托管模型额度。日常使用可以选择 Plus，使用更频繁或任务更多时可以选择 Pro。",
     },
     {
       question: "如何下载安装 MotiClaw？",
@@ -140,7 +140,7 @@ const faqContent: Record<Locale, SiteFaqItem[]> = {
     {
       question: "Is MotiClaw free to use?",
       answer:
-        "Yes. MotiClaw is free to download and use, and the free tier supports up to 8 AI partners. For higher hosted-model limits and a bigger team, subscribe to Plus (¥39/month, 16 AI partners) or Pro (¥199/month, 32 AI partners).",
+        "Yes. MotiClaw is free to download and use, and the free tier supports up to 8 AI partners. For more hosted-model allowance and a bigger team, subscribe to Plus (¥68/month or ¥680/year, 16 AI partners) or Pro (¥199/month, 32 AI partners).",
     },
     {
       question: "Which operating systems does MotiClaw support?",
@@ -157,9 +157,9 @@ const faqContent: Record<Locale, SiteFaqItem[]> = {
         "The free tier supports up to 8 AI partners. Plus raises the cap to 16 and Pro to 32, so you can scale the team as your workload grows.",
     },
     {
-      question: "How are hosted-model limits counted?",
+      question: "How should I choose between Plus and Pro?",
       answer:
-        "Limits use two rolling windows at once: a 5-hour window and a 7-day window. Each hosted-model request counts once in both, and capacity recovers automatically as the windows roll forward. Plus includes 30 requests per 5 hours and 150 per week; Pro includes 100 per 5 hours and 600 per week.",
+        "Plus and Pro provide different hosted-model allowances. Choose Plus for everyday use, or Pro when you use MotiClaw more often or run more tasks.",
     },
     {
       question: "How do I download and install MotiClaw?",

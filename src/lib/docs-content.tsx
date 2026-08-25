@@ -49,8 +49,8 @@ const firstRepeatableWorkflowProductCase: ContentFigure = {
   width: 1440,
   height: 1000,
   alt: {
-    zh: "MotiClaw AI 伙伴管理页展示一组本地示例伙伴，以及每位伙伴的职责、状态、技能和任务数量",
-    en: "The MotiClaw AI partner management page shows a local sample team with each partner's role, status, skills, and task counts",
+    zh: "MotiClaw AI 伙伴管理页展示一组伙伴，以及每位伙伴的职责、状态、技能和任务数量",
+    en: "The MotiClaw AI partner management page shows a team with each partner's role, status, skills, and task counts",
   },
   caption: {
     zh: "先看职责和当前状态，再选择最贴近这条重复任务的一位伙伴；第一轮不需要把所有角色都接进来。",
@@ -398,7 +398,7 @@ export const docPages: DocPage[] = [
 
           <ContentFigureView visual={firstRepeatableWorkflowProductCase} locale="zh" />
 
-          <p className={p}>上面的本地示例里，每位伙伴都有清楚的职责和状态。若你要先跑“每周反馈归类”，只选择客户回访助手即可；完成标准是它交出问题、需求和待回复项，并停在你确认的位置。</p>
+          <p className={p}>上面的画面里，每位伙伴都有清楚的职责和状态。若你要先跑“每周反馈归类”，只选择客户回访助手即可；完成标准是它交出问题、需求和待回复项，并停在你确认的位置。</p>
 
           <h2 className={h2}>4. 手动跑第一轮，并检查四件事</h2>
           <ul className={ul}>
@@ -466,7 +466,7 @@ export const docPages: DocPage[] = [
 
           <ContentFigureView visual={firstRepeatableWorkflowProductCase} locale="en" />
 
-          <p className={p}>In the local sample above, every partner has a clear role and status. For a weekly feedback-triage loop, choose only the customer follow-up partner. The round is complete when it returns questions, requests, and draft replies and stops for your review.</p>
+          <p className={p}>In the view above, every partner has a clear role and status. For a weekly feedback-triage loop, choose only the customer follow-up partner. The round is complete when it returns questions, requests, and draft replies and stops for your review.</p>
 
           <h2 className={h2}>4. Run the first round manually and check four things</h2>
           <ul className={ul}>
@@ -584,8 +584,8 @@ export const docPages: DocPage[] = [
           <h2 className={h2}>1. 选当前够用的套餐</h2>
           <ul className={ul}>
             <li><span className={strong}>Free</span>：¥0，包含完整桌面端功能、基础托管模型限额和最多 8 位 AI 伙伴。还没稳定跑通一条工作流时，先留在 Free。</li>
-            <li><span className={strong}>Plus</span>：¥39 / 30 天，提升日常托管模型容量，最多创建 16 位 AI 伙伴，并包含会员写作能力。适合已经每天使用，但团队规模仍然清楚可控的人。</li>
-            <li><span className={strong}>Pro</span>：¥199 / 30 天，托管模型容量最高约为 Plus 的 4 倍，AI 伙伴数量不设上限，并包含优先支持和新能力优先体验。适合整天运行多条工作流、确实需要继续拆分角色的人。</li>
+            <li><span className={strong}>Plus</span>：¥68 / 月或 ¥680 / 年，提供更多托管模型额度，最多创建 16 位 AI 伙伴。适合已经每天使用，但团队规模仍然清楚可控的人。</li>
+            <li><span className={strong}>Pro</span>：¥199 / 月，提供更高的托管模型额度，最多创建 32 位 AI 伙伴。适合整天运行多条工作流、确实需要继续拆分角色的人。</li>
           </ul>
           <div className={tip}>不要用旧截图或旧文章里的固定次数做预算。套餐目录会调整，购买前以官网「套餐价格」和会员中心当时展示的权益为准。</div>
 
@@ -630,8 +630,8 @@ export const docPages: DocPage[] = [
           <h2 className={h2}>1. Choose the plan that is enough today</h2>
           <ul className={ul}>
             <li><span className={strong}>Free</span>: ¥0, with the full desktop app, base hosted-model capacity, and up to 8 AI partners. Stay on Free until one workflow is running reliably.</li>
-            <li><span className={strong}>Plus</span>: ¥39 for 30 days, with higher everyday hosted-model capacity, up to 16 AI partners, and member writing assistance. It fits daily use while the team still has a clear, controlled size.</li>
-            <li><span className={strong}>Pro</span>: ¥199 for 30 days, with up to about 4x Plus hosted-model capacity, unlimited AI partners, priority support, and early access to new capabilities. It fits heavier all-day workflows that genuinely need more distinct roles.</li>
+            <li><span className={strong}>Plus</span>: ¥68 per month or ¥680 per year, with more hosted-model allowance and up to 16 AI partners. It fits daily use while the team still has a clear, controlled size.</li>
+            <li><span className={strong}>Pro</span>: ¥199 per month, with a higher hosted-model allowance and up to 32 AI partners. It fits heavier all-day workflows that genuinely need more distinct roles.</li>
           </ul>
           <div className={tip}>Do not budget from fixed request counts in an old screenshot or article. The catalog can change; review the current Pricing page and membership center before buying.</div>
 

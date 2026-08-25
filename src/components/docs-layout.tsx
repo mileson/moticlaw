@@ -3,9 +3,10 @@ import type { Locale } from "@/lib/locale";
 import { docsNav, getDocPage } from "@/lib/docs-content";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeaderStatic } from "@/components/site-header-static";
+import { getCanonicalPath } from "@/components/seo-resource-manifest";
 
 function docHref(slug: string, locale: Locale) {
-  return slug === "index" ? `/docs?lang=${locale}` : `/docs/${slug}?lang=${locale}`;
+  return getCanonicalPath(slug === "index" ? "/docs" : `/docs/${slug}`, locale);
 }
 
 export function DocsLayout({
@@ -42,7 +43,7 @@ export function DocsLayout({
                     aria-current={active ? "page" : undefined}
                     className={`block rounded-lg px-3 py-1.5 text-sm transition ${
                       active
-                        ? "bg-[rgba(239,123,67,0.1)] font-semibold text-[var(--accent-strong)]"
+                        ? "bg-[rgba(0,0,0,0.1)] font-semibold text-[var(--accent-strong)]"
                         : "text-[var(--muted)] hover:bg-[var(--surface-strong)] hover:text-[var(--foreground)]"
                     }`}
                   >
@@ -81,7 +82,7 @@ export function DocsLayout({
               {previousDoc ? (
                 <a
                   href={docHref(previousDoc.slug, locale)}
-                  className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 transition hover:border-[rgba(228,145,92,0.32)]"
+                  className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 transition hover:border-[rgba(0,0,0,0.32)]"
                 >
                   <span className="block text-xs text-[var(--muted)]">{locale === "zh" ? "上一篇" : "Previous"}</span>
                   <span className="mt-1 block text-sm font-semibold text-[var(--foreground)]">{previousDoc.title[locale]}</span>
@@ -92,7 +93,7 @@ export function DocsLayout({
               {nextDoc ? (
                 <a
                   href={docHref(nextDoc.slug, locale)}
-                  className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 text-right transition hover:border-[rgba(228,145,92,0.32)]"
+                  className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 text-right transition hover:border-[rgba(0,0,0,0.32)]"
                 >
                   <span className="block text-xs text-[var(--muted)]">{locale === "zh" ? "下一篇" : "Next"}</span>
                   <span className="mt-1 block text-sm font-semibold text-[var(--foreground)]">{nextDoc.title[locale]}</span>

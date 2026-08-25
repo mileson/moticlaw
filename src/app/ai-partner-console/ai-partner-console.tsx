@@ -199,7 +199,7 @@ const initialPartners: AiPartner[] = [
     role: { zh: "运营总控", en: "Operations lead" },
     team: { zh: "增长运营", en: "Growth Ops" },
     avatar: "晨",
-    accent: "#ef7b43",
+    accent: "#111111",
     status: "working",
     channel: "feishu",
     usage: 42800,
@@ -501,11 +501,11 @@ export function AiPartnerConsole({ locale }: { locale: Locale }) {
       <div className="mx-auto grid w-full max-w-[92rem] gap-4 lg:grid-cols-[15.5rem_minmax(0,1fr)_22rem]">
         <aside className="rounded-lg border border-[#d9e1e8] bg-white p-3 shadow-[0_6px_18px_rgba(23,33,43,0.06)] lg:sticky lg:top-[5.75rem] lg:h-[calc(100vh-6.75rem)]">
           <div className="flex items-center gap-2 border-b border-[#e5ebf0] pb-3">
-            <span className="grid h-9 w-9 place-items-center rounded-lg bg-[#fff3eb] text-[#d95f26]">
+            <span className="grid h-9 w-9 place-items-center rounded-lg bg-[#f5f5f5] text-[#000000]">
               <Kanban size={19} weight="duotone" aria-hidden="true" />
             </span>
             <div className="min-w-0">
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-[#d95f26]">{t.eyebrow}</p>
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-[#000000]">{t.eyebrow}</p>
               <p className="truncate text-sm font-semibold text-[#17212b]">MotiClaw</p>
             </div>
           </div>
@@ -559,7 +559,7 @@ export function AiPartnerConsole({ locale }: { locale: Locale }) {
           <div className="rounded-lg border border-[#d9e1e8] bg-white p-4 shadow-[0_6px_18px_rgba(23,33,43,0.06)]">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
               <div className="min-w-0">
-                <p className="text-[0.74rem] font-semibold uppercase tracking-[0.16em] text-[#d95f26]">{t.summary}</p>
+                <p className="text-[0.74rem] font-semibold uppercase tracking-[0.16em] text-[#000000]">{t.summary}</p>
                 <h1 className="mt-1 text-2xl font-semibold tracking-normal text-[#17212b] sm:text-3xl">{t.title}</h1>
                 <p className="mt-2 max-w-3xl text-sm leading-6 text-[#5f6b76]">{t.lead}</p>
               </div>
@@ -583,7 +583,7 @@ export function AiPartnerConsole({ locale }: { locale: Locale }) {
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder={t.search}
-                  className="h-11 w-full rounded-lg border border-[#d9e1e8] bg-white pl-10 pr-4 text-sm text-[#17212b] outline-none transition focus:border-[#ef7b43] focus:ring-2 focus:ring-[#ef7b43]/20"
+                  className="h-11 w-full rounded-lg border border-[#d9e1e8] bg-white pl-10 pr-4 text-sm text-[#17212b] outline-none transition focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/20"
                 />
               </label>
               <button
@@ -593,7 +593,7 @@ export function AiPartnerConsole({ locale }: { locale: Locale }) {
                   setStatusFilter("all");
                   setChannelFilter("all");
                 }}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-[#d9e1e8] bg-white px-4 text-sm font-medium text-[#17212b] transition hover:border-[#ef7b43]/45 hover:bg-[#fff7f1]"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-[#d9e1e8] bg-white px-4 text-sm font-medium text-[#17212b] transition hover:border-[#111111]/45 hover:bg-[#f7f7f7]"
               >
                 {t.clear}
               </button>
@@ -619,7 +619,7 @@ export function AiPartnerConsole({ locale }: { locale: Locale }) {
           ) : (
             <div className="grid min-h-[22rem] place-items-center rounded-lg border border-dashed border-[#cbd5df] bg-white p-8 text-center">
               <div>
-                <WarningCircle className="mx-auto text-[#d95f26]" size={36} aria-hidden="true" />
+                <WarningCircle className="mx-auto text-[#b45309]" size={36} aria-hidden="true" />
                 <p className="mt-3 text-base font-semibold text-[#17212b]">{t.noResult}</p>
                 <p className="mt-1 text-sm text-[#5f6b76]">{t.noResultHint}</p>
               </div>
@@ -674,7 +674,7 @@ export function AiPartnerConsole({ locale }: { locale: Locale }) {
           <button
             type="button"
             onClick={moveTaskForward}
-            className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-[#ef7b43] px-4 text-sm font-semibold text-[#2f241d] transition hover:bg-[#d95f26] focus:outline-none focus:ring-2 focus:ring-[#ef7b43]/35"
+            className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-[#111111] px-4 text-sm font-semibold text-[#ffffff] transition hover:bg-[#000000] focus:outline-none focus:ring-2 focus:ring-[#111111]/35"
           >
             <PlayCircle size={17} weight="fill" aria-hidden="true" />
             {t.pushTask}
@@ -710,7 +710,7 @@ export function AiPartnerConsole({ locale }: { locale: Locale }) {
                       <TaskBadge state={task.state} label={t.taskStates[task.state]} />
                     </div>
                     <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#e8edf2]">
-                      <div className="h-full rounded-full bg-[#ef7b43] transition-[width] duration-300" style={{ width: `${task.progress}%` }} />
+                      <div className="h-full rounded-full bg-[#111111] transition-[width] duration-300" style={{ width: `${task.progress}%` }} />
                     </div>
                   </div>
                 ))}
@@ -718,7 +718,7 @@ export function AiPartnerConsole({ locale }: { locale: Locale }) {
             ) : null}
           </div>
 
-          <p className="mt-4 rounded-lg border border-[#f1dccf] bg-[#fff7f1] p-3 text-xs leading-5 text-[#8a4b28]">{t.demoNotice}</p>
+          <p className="mt-4 rounded-lg border border-[#f1dccf] bg-[#f7f7f7] p-3 text-xs leading-5 text-[#8a4b28]">{t.demoNotice}</p>
         </aside>
       </div>
     </section>
@@ -743,7 +743,7 @@ function FilterButton({ active, onClick, children }: { active: boolean; onClick:
       type="button"
       onClick={onClick}
       className={`flex h-9 items-center justify-between gap-3 rounded-lg border px-3 text-sm transition ${
-        active ? "border-[#ef7b43]/35 bg-[#fff3eb] text-[#9f4c20]" : "border-[#e5ebf0] bg-white text-[#4d5965] hover:border-[#ef7b43]/30"
+        active ? "border-[#111111]/35 bg-[#f5f5f5] text-[#222222]" : "border-[#e5ebf0] bg-white text-[#4d5965] hover:border-[#111111]/30"
       }`}
     >
       {children}
@@ -785,8 +785,8 @@ function PartnerCard({
     <button
       type="button"
       onClick={onClick}
-      className={`group flex min-h-[13.75rem] flex-col rounded-lg border bg-white p-3 text-left shadow-[0_6px_18px_rgba(23,33,43,0.05)] transition duration-150 hover:-translate-y-0.5 hover:border-[#ef7b43]/40 ${
-        selected ? "border-[#ef7b43] ring-2 ring-[#ef7b43]/18" : "border-[#d9e1e8]"
+      className={`group flex min-h-[13.75rem] flex-col rounded-lg border bg-white p-3 text-left shadow-[0_6px_18px_rgba(23,33,43,0.05)] transition duration-150 hover:-translate-y-0.5 hover:border-[#111111]/40 ${
+        selected ? "border-[#111111] ring-2 ring-[#111111]/18" : "border-[#d9e1e8]"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -823,13 +823,13 @@ function PartnerCard({
               <span className="text-[0.7rem] text-[#7b8793]">{firstTask.progress}%</span>
             </div>
             <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#e8edf2]">
-              <div className="h-full rounded-full bg-[#ef7b43]" style={{ width: `${firstTask.progress}%` }} />
+              <div className="h-full rounded-full bg-[#111111]" style={{ width: `${firstTask.progress}%` }} />
             </div>
           </div>
         ) : null}
         <div className="flex items-center justify-between border-t border-[#edf1f4] pt-2">
           <span className="truncate text-xs text-[#7b8793]">{partner.team[locale]}</span>
-          <span className="text-xs font-semibold text-[#d95f26]">{selected ? t.selected : t.openConfig}</span>
+          <span className="text-xs font-semibold text-[#000000]">{selected ? t.selected : t.openConfig}</span>
         </div>
       </div>
     </button>
@@ -920,7 +920,7 @@ function ActionButton({ onClick, children }: { onClick: () => void; children: Re
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-[#d9e1e8] bg-white px-2 text-xs font-semibold text-[#17212b] transition hover:border-[#ef7b43]/40 hover:bg-[#fff7f1]"
+      className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-[#d9e1e8] bg-white px-2 text-xs font-semibold text-[#17212b] transition hover:border-[#111111]/40 hover:bg-[#f7f7f7]"
     >
       {children}
     </button>

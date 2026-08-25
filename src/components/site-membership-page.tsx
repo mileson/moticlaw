@@ -72,7 +72,10 @@ export function SiteMembershipPage({
   const content = siteBillingCopy[locale];
   const [catalog] = useState(() => ({
     ...initialCatalog,
-    plans: [...initialCatalog.plans].sort((a, b) => a.sortOrder - b.sortOrder),
+    plans: [...initialCatalog.plans].sort((a, b) => {
+      const tierRank = (tier: string) => (tier === "plus" ? 0 : tier === "pro" ? 1 : 2);
+      return tierRank(a.tier) - tierRank(b.tier) || a.durationDays - b.durationDays || a.sortOrder - b.sortOrder;
+    }),
   }));
   const [orders, setOrders] = useState(initialOrders);
   const [membershipStatus, setMembershipStatus] = useState(initialMembershipStatus);
@@ -360,7 +363,9 @@ export function SiteMembershipPage({
                         </div>
                         <div className="billing-membership-plan-price-row">
                           <strong className="billing-membership-plan-price-hero">{formatMoney(plan.amountCents)}</strong>
-                          <span className="billing-membership-plan-points-note">{content.perMonth}</span>
+                          <span className="billing-membership-plan-points-note">
+                            {plan.durationDays >= 300 ? content.perYear : content.perMonth}
+                          </span>
                         </div>
                         <p className="billing-plan-card-note">{plan.descriptionI18n[locale] || plan.description}</p>
                         {displayHighlights.length ? (

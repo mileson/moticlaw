@@ -11,6 +11,7 @@ export type SiteBillingCopy = {
   viewOrders: string;
   notActivated: string;
   perMonth: string;
+  perYear: string;
   expiresOn: string;
   freeTierName: string;
   maxAgentsLabel: string;
@@ -98,6 +99,7 @@ export const siteBillingCopy: Record<"en" | "zh", SiteBillingCopy> = {
     viewOrders: "View orders",
     notActivated: "Free plan",
     perMonth: "/ month",
+    perYear: "/ year",
     expiresOn: "Valid until",
     freeTierName: "Free plan",
     maxAgentsLabel: "AI partners",
@@ -110,7 +112,7 @@ export const siteBillingCopy: Record<"en" | "zh", SiteBillingCopy> = {
     refresh: "Refresh",
     title: "Membership plans",
     eyebrow: "Account center",
-    intro: "Choose a monthly plan to raise hosted-model capacity, AI partner access, and paid writing capabilities. The plan activates right after payment.",
+    intro: "Choose monthly or annual billing to raise hosted-model capacity, AI partner access, and paid writing capabilities. The plan activates right after payment.",
     ordersIntro: "Review your recent membership orders, payment progress, and the records that update after checkout.",
     heroFactLabel: "Configured plans",
     planCountUnit: "plans",
@@ -153,7 +155,7 @@ export const siteBillingCopy: Record<"en" | "zh", SiteBillingCopy> = {
     expiredOrder: "This payment code has expired. Create a new order to continue.",
     balanceDetailsTitle: "Points details",
     tipsTitle: "Before you buy",
-    tipsBody: "Membership plans raise your usage limits for a month at a time. Points stay separate: they cover pay-as-you-go usage and are never affected by plan changes.",
+    tipsBody: "Membership plans raise your usage limits for the billing period you choose. Points stay separate: they cover pay-as-you-go usage and are never affected by plan changes.",
     desktopReturnHint: "After the payment succeeds, you can return to MotiClaw Desktop and continue the same task with the same account.",
     activityTitle: "Recent activity",
     recentLedger: "Points records",
@@ -211,6 +213,7 @@ export const siteBillingCopy: Record<"en" | "zh", SiteBillingCopy> = {
     viewOrders: "查看订单",
     notActivated: "免费版",
     perMonth: "/ 月",
+    perYear: "/ 年",
     expiresOn: "有效期至",
     freeTierName: "免费版",
     maxAgentsLabel: "AI 伙伴",
@@ -223,7 +226,7 @@ export const siteBillingCopy: Record<"en" | "zh", SiteBillingCopy> = {
     refresh: "刷新",
     title: "会员套餐",
     eyebrow: "账号中心",
-    intro: "选择按月订阅的套餐，提升托管模型容量、AI 伙伴权限和付费写作能力，支付后立即生效。",
+    intro: "选择按月或按年开通套餐，提升托管模型容量、AI 伙伴权限和付费写作能力，支付后立即生效。",
     ordersIntro: "查看最近会员订单、支付状态，以及下单后会自动更新的记录。",
     heroFactLabel: "当前已配置",
     planCountUnit: "个套餐",
@@ -266,7 +269,7 @@ export const siteBillingCopy: Record<"en" | "zh", SiteBillingCopy> = {
     expiredOrder: "这个付款码已经过期，请重新创建订单。",
     balanceDetailsTitle: "积分明细",
     tipsTitle: "购买说明",
-    tipsBody: "会员套餐按月提升使用限额；积分独立结算，用于按量补充，开通或到期都不会影响积分余额。",
+    tipsBody: "会员套餐在你选择的计费周期内提升使用限额；积分独立结算，用于按量补充，开通或到期都不会影响积分余额。",
     desktopReturnHint: "积分到账后，可以直接回到 MotiClaw Desktop 继续当前任务。",
     activityTitle: "最近动态",
     recentLedger: "积分流水",

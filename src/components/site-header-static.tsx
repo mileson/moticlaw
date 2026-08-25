@@ -51,7 +51,7 @@ export function SiteHeaderStatic({
         { id: "pricing", label: copy.pricing, href: `/pricing?lang=${locale}`, active: path === "/pricing" },
         { id: "blog", label: copy.blog, href: `/blog?lang=${locale}`, active: path.startsWith("/blog") },
         { id: "docs", label: copy.docs, href: `/docs?lang=${locale}`, active: path.startsWith("/docs") },
-        { id: "contact", label: copy.contact, href: anchor("footer"), active: false },
+        { id: "contact", label: copy.contact, href: anchor("contact"), active: false },
       ];
   const downloadProps = onLanding
     ? { href: "#top", "data-open-download": "true" }

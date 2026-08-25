@@ -1,12 +1,22 @@
 "use client";
 
-import { ArrowSquareOut, Check, Eye, EyeSlash } from "@phosphor-icons/react";
+import { ArrowSquareOut, Check } from "@phosphor-icons/react";
 import Image from "next/image";
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import type { FormEvent, InputHTMLAttributes, ReactNode } from "react";
 import { TurnstileWidget } from "@/components/turnstile-widget";
 import type { TurnstileWidgetHandle } from "@/components/turnstile-widget";
 import { siteAuthCopy } from "@/components/site-auth-copy";
+import {
+  createDesktopHandoffAttemptGuard,
+  isLoopbackDesktopReturnUri,
+  nativeDesktopReturnCooldownMs,
+  normalizeRememberedDesktopReturnContext,
+  resolveEffectiveDesktopReturnContext,
+  selectDesktopReturnRetryTarget,
+  type DesktopHandoffAttemptSource,
+  type DesktopReturnContext,
+} from "@/lib/desktop-auth-handoff";
 import { localeToHtmlLang, type Locale } from "@/lib/locale";
 import type { SiteAuthClientRedirect, SiteAuthPageMode, SiteAuthSession, TurnstileWidgetRegion } from "@/lib/site-auth";
 
@@ -38,12 +48,9 @@ type ApiResult = {
 type ApiErrorState = NonNullable<ApiResult["error"]>;
 type DesktopReturnPermissionState = PermissionState | "unsupported";
 type RegisterStep = "details" | "verify";
-type RememberedDesktopReturnContext = {
-  clientRedirectUri: string;
-  fallbackRedirectUri: string | null;
-  updatedAt: number;
-};
+type LoginStep = "email" | "verify";
 type TurnstileMode = "login" | "register" | "forgot-password";
+type DesktopReturnSubmission = "confirmed" | "dispatched" | "failed";
 
 const textFieldClassName =
   "w-full rounded-[1rem] border border-[var(--line)] bg-[var(--surface-strong)] px-4 py-3.5 text-base text-[var(--foreground)] outline-none transition placeholder:text-slate-400 focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent-soft)] disabled:cursor-not-allowed disabled:opacity-60 dark:placeholder:text-slate-500";
@@ -52,7 +59,6 @@ const secondaryButtonClassName =
   "inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[1rem] border border-[var(--line)] bg-[var(--glass)] px-5 text-sm font-medium text-[var(--foreground)] transition hover:border-[var(--accent)] hover:bg-[var(--surface)] disabled:cursor-not-allowed";
 const primaryButtonClassName =
   "inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-[1rem] bg-[var(--accent)] px-5 text-base font-semibold text-white transition hover:bg-[var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60";
-const desktopReturnProtocols = new Set(["moticlaw:", "moticlaw-dev:"]);
 const rememberedDesktopReturnContextStorageKey = "moticlaw.site.desktop-return-context.v1";
 const rememberedDesktopReturnContextTtlMs = 30 * 60 * 1000;
 
@@ -66,8 +72,8 @@ export function SiteAuthPage({
   clientRedirectUri,
   fallbackRedirectUri,
   returnToPath,
-  requestedProvider,
-  oauthErrorCode,
+  requestedProvider = null,
+  oauthErrorCode = null,
   websiteDesktopClientRedirectUri,
 }: {
   mode: SiteAuthPageMode;
@@ -79,19 +85,15 @@ export function SiteAuthPage({
   clientRedirectUri: string | null;
   fallbackRedirectUri: string | null;
   returnToPath: string | null;
-  requestedProvider: "watcha" | null;
-  oauthErrorCode: string | null;
+  requestedProvider?: "watcha" | null;
+  oauthErrorCode?: string | null;
   websiteDesktopClientRedirectUri: string | null;
 }) {
   const content = siteAuthCopy[locale];
   const modeContent = content.modes[mode];
-  const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState(viewerSession.account?.email || "");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [registerPasswordVisible, setRegisterPasswordVisible] = useState(false);
-  const [registerConfirmPasswordVisible, setRegisterConfirmPasswordVisible] = useState(false);
   const [registerStep, setRegisterStep] = useState<RegisterStep>("details");
+  const [loginStep, setLoginStep] = useState<LoginStep>("email");
   const [registerVerificationEmail, setRegisterVerificationEmail] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [registerVerificationNotice, setRegisterVerificationNotice] = useState<string | null>(null);
@@ -108,14 +110,19 @@ export function SiteAuthPage({
   const [successState, setSuccessState] = useState<SuccessState | null>(null);
   const [desktopReturnPrepared, setDesktopReturnPrepared] = useState<SiteAuthClientRedirect | null>(null);
   const [desktopReturnPending, setDesktopReturnPending] = useState<SiteAuthClientRedirect | null>(null);
-  const [desktopReturnAutoTriggered, setDesktopReturnAutoTriggered] = useState(false);
+  const [desktopReturnConfirmed, setDesktopReturnConfirmed] = useState(false);
   const [loopbackPermissionState, setLoopbackPermissionState] = useState<DesktopReturnPermissionState>("unsupported");
-  const [rememberedDesktopReturnContext, setRememberedDesktopReturnContext] = useState<RememberedDesktopReturnContext | null>(null);
+  const [rememberedDesktopReturnContext, setRememberedDesktopReturnContext] = useState<DesktopReturnContext | null>(null);
   const turnstileWidgetRef = useRef<TurnstileWidgetHandle | null>(null);
   const pendingTurnstileSubmitRef = useRef<TurnstileMode | null>(null);
+  const desktopHandoffAttemptGuardRef = useRef(createDesktopHandoffAttemptGuard());
 
-  const effectiveClientRedirectUri = clientRedirectUri || rememberedDesktopReturnContext?.clientRedirectUri || null;
-  const effectiveFallbackRedirectUri = fallbackRedirectUri || rememberedDesktopReturnContext?.fallbackRedirectUri || null;
+  const effectiveDesktopReturnContext = useMemo(
+    () => resolveEffectiveDesktopReturnContext(clientRedirectUri, fallbackRedirectUri, rememberedDesktopReturnContext),
+    [clientRedirectUri, fallbackRedirectUri, rememberedDesktopReturnContext],
+  );
+  const effectiveClientRedirectUri = effectiveDesktopReturnContext.clientRedirectUri;
+  const effectiveFallbackRedirectUri = effectiveDesktopReturnContext.fallbackRedirectUri;
 
   useEffect(() => {
     setResetToken(initialResetToken || "");
@@ -137,33 +144,22 @@ export function SiteAuthPage({
 
   useEffect(() => {
     if (mode !== "register") {
-      setConfirmPassword("");
-      setRegisterPasswordVisible(false);
-      setRegisterConfirmPasswordVisible(false);
       setRegisterStep("details");
       setRegisterVerificationEmail("");
       setVerificationCode("");
       setRegisterVerificationNotice(null);
       setRegisterPreviewCode(null);
     }
+    if (mode !== "login") setLoginStep("email");
     setLoginTurnstileRequired(false);
     resetTurnstile();
   }, [mode]);
 
   useEffect(() => {
-    if (errorState?.code === "client_password_confirmation_required" && confirmPassword.trim()) {
-      setErrorState(null);
-      return;
-    }
-    if (errorState?.code === "client_password_mismatch" && password === confirmPassword) {
-      setErrorState(null);
-    }
-  }, [confirmPassword, errorState?.code, password]);
-
-  useEffect(() => {
     setDesktopReturnPrepared(null);
     setDesktopReturnPending(null);
-    setDesktopReturnAutoTriggered(false);
+    setDesktopReturnConfirmed(false);
+    desktopHandoffAttemptGuardRef.current.reset();
     setLoopbackPermissionState("unsupported");
   }, [effectiveClientRedirectUri, effectiveFallbackRedirectUri, mode, viewerSession.authenticated]);
 
@@ -186,8 +182,8 @@ export function SiteAuthPage({
   const desktopReturnLoopbackUri = useMemo(() => {
     const preparedLoopback = resolveLoopbackRedirectAction(desktopReturnPrepared);
     if (preparedLoopback) return preparedLoopback;
-    if (effectiveClientRedirectUri && isLoopbackRedirect(effectiveClientRedirectUri)) return effectiveClientRedirectUri;
-    if (effectiveFallbackRedirectUri && isLoopbackRedirect(effectiveFallbackRedirectUri)) return effectiveFallbackRedirectUri;
+    if (effectiveClientRedirectUri && isLoopbackDesktopReturnUri(effectiveClientRedirectUri)) return effectiveClientRedirectUri;
+    if (effectiveFallbackRedirectUri && isLoopbackDesktopReturnUri(effectiveFallbackRedirectUri)) return effectiveFallbackRedirectUri;
     return null;
   }, [desktopReturnPrepared, effectiveClientRedirectUri, effectiveFallbackRedirectUri]);
 
@@ -198,11 +194,20 @@ export function SiteAuthPage({
   const showDesktopReturnBlockedGuide = desktopReturnUsesLoopback && (loopbackPermissionState === "denied" || desktopReturnErrorCode === "desktop_return_blocked");
   const showDesktopReturnRetryGuide = desktopReturnUsesLoopback && desktopReturnErrorCode === "desktop_return_failed";
   const canRetryPreparedDesktopReturn = Boolean(desktopReturnPrepared && !desktopReturnPending);
-  const canRetryDesktopHandoff = Boolean(viewerSession.authenticated && mode === "login" && effectiveClientRedirectUri && !desktopReturnPrepared && !desktopReturnPending);
+  const canRetryDesktopHandoff = Boolean(
+    !desktopReturnConfirmed
+      && viewerSession.authenticated
+      && mode === "login"
+      && effectiveClientRedirectUri
+      && !desktopReturnPrepared
+      && !desktopReturnPending,
+  );
   const desktopReturnActive = Boolean(desktopReturnPending);
   const showDesktopReturnAction = Boolean(effectiveClientRedirectUri && (desktopReturnPrepared || desktopReturnPending || canRetryDesktopHandoff));
   const desktopReturnActionDisabled = submitting || desktopReturnActive || (!canRetryPreparedDesktopReturn && !canRetryDesktopHandoff);
   const registerVerificationActive = mode === "register" && registerStep === "verify";
+  const loginVerificationActive = mode === "login" && loginStep === "verify";
+  const verificationActive = registerVerificationActive || loginVerificationActive;
   const watchaLoginDisabled = submitting || desktopReturnActive || watchaRedirecting;
 
   const resolvedErrorMessage = turnstileNoticeCode
@@ -210,11 +215,11 @@ export function SiteAuthPage({
     : errorState
     ? content.errors[errorState.code as keyof typeof content.errors] || errorState.message || content.errors.site_auth_http_502
     : null;
-  const showTurnstile = Boolean(turnstileSiteKey && (mode === "login" || mode === "forgot-password"));
+  const showTurnstile = Boolean(turnstileSiteKey && ((mode === "login" && !loginVerificationActive) || mode === "forgot-password"));
   const turnstileRequiredForSubmit = Boolean(
     turnstileSiteKey && (
       mode === "forgot-password"
-      || (mode === "login" && loginTurnstileRequired)
+      || (mode === "login" && !loginVerificationActive && loginTurnstileRequired)
     ),
   );
   const submitDisabled = submitting || turnstileChallengePending || watchaRedirecting;
@@ -287,8 +292,8 @@ export function SiteAuthPage({
 
   async function finishDesktopReturn(redirect: SiteAuthClientRedirect) {
     try {
-      const returned = await submitDesktopReturn(redirect);
-      if (!returned) {
+      const submission = await submitDesktopReturn(redirect);
+      if (submission === "failed") {
         const failureCode = await resolveDesktopReturnFailureCode(redirect);
         if (failureCode === "desktop_return_blocked" && desktopReturnUsesLoopback) {
           setLoopbackPermissionState("denied");
@@ -296,9 +301,22 @@ export function SiteAuthPage({
         setErrorState({ code: failureCode });
         return false;
       }
-      setDesktopReturnPrepared(null);
-      clearRememberedDesktopReturnContext();
-      setRememberedDesktopReturnContext(null);
+      setErrorState(null);
+      if (submission === "confirmed") {
+        setDesktopReturnConfirmed(true);
+        setDesktopReturnPrepared(null);
+        clearRememberedDesktopReturnContext();
+        setRememberedDesktopReturnContext(null);
+        setSuccessState({
+          title: content.alreadySignedIn.successTitle,
+          body: content.desktopReturn.confirmedBody,
+        });
+      } else {
+        setSuccessState({
+          title: content.alreadySignedIn.successTitle,
+          body: content.desktopReturn.dispatchedBody,
+        });
+      }
       return true;
     } catch {
       const failureCode = await resolveDesktopReturnFailureCode(redirect);
@@ -309,24 +327,6 @@ export function SiteAuthPage({
       return false;
     }
   }
-
-  const completeDesktopReturn = useEffectEvent((redirect: SiteAuthClientRedirect) => finishDesktopReturn(redirect));
-
-  useEffect(() => {
-    if (!desktopReturnPending) return;
-    let cancelled = false;
-
-    void completeDesktopReturn(desktopReturnPending)
-      .then(() => {
-        if (cancelled) return;
-        setDesktopReturnPending(null);
-      })
-      .catch(() => null);
-
-    return () => {
-      cancelled = true;
-    };
-  }, [desktopReturnPending]);
 
   function resetTurnstile(options: { clearNotice?: boolean; clearPending?: boolean } = {}) {
     const { clearNotice = true, clearPending = true } = options;
@@ -373,9 +373,8 @@ export function SiteAuthPage({
 
     const clientValidationCode = validateClientInput(mode, {
       email,
-      password,
-      confirmPassword,
       registerStep,
+      loginStep,
       verificationCode,
       newPassword,
       resetToken,
@@ -397,12 +396,9 @@ export function SiteAuthPage({
     setSubmitting(true);
     try {
       if (mode === "login") {
-        const result = await postAuth("/api/auth/login", {
-          email: email.trim(),
-          password,
-          turnstileToken,
-          turnstileSiteKey,
-          turnstileRegion,
+        const result = await postAuth(loginVerificationActive ? "/api/auth/login-verify" : "/api/auth/login-request-code", {
+          email: registerVerificationEmail || email.trim(),
+          ...(loginVerificationActive ? { code: verificationCode.trim() } : { turnstileToken, turnstileSiteKey, turnstileRegion }),
           clientRedirectUri: effectiveClientRedirectUri,
           fallbackRedirectUri: effectiveFallbackRedirectUri,
         });
@@ -419,10 +415,20 @@ export function SiteAuthPage({
           }
           return;
         }
+        if (!loginVerificationActive) {
+          setLoginTurnstileRequired(false);
+          setLoginStep("verify");
+          setRegisterVerificationEmail(result.verification?.email || email.trim());
+          setRegisterVerificationNotice(result.message || content.registerVerification.sentBody);
+          setRegisterPreviewCode(result.previewCode || null);
+          setVerificationCode("");
+          resetTurnstile();
+          return;
+        }
         setLoginTurnstileRequired(false);
         resetTurnstile();
         if (result.clientRedirect) {
-          setPassword("");
+          setVerificationCode("");
           setSuccessState({
             title: modeContent.successTitle,
             body: modeContent.successBody,
@@ -470,8 +476,6 @@ export function SiteAuthPage({
 
         const result = await postAuth("/api/auth/register", {
           email: email.trim(),
-          password,
-          displayName: displayName.trim(),
           turnstileToken,
           turnstileSiteKey,
           turnstileRegion,
@@ -485,10 +489,6 @@ export function SiteAuthPage({
         setRegisterVerificationEmail(result.verification?.email || email.trim());
         setRegisterVerificationNotice(result.message || content.registerVerification.sentBody);
         setRegisterPreviewCode(result.previewCode || null);
-        setPassword("");
-        setConfirmPassword("");
-        setRegisterPasswordVisible(false);
-        setRegisterConfirmPasswordVisible(false);
         setVerificationCode("");
         resetTurnstile();
         return;
@@ -582,11 +582,11 @@ export function SiteAuthPage({
   }
 
   async function handleResendRegisterCode() {
-    if (submitting || desktopReturnActive || !registerVerificationActive) return;
+    if (submitting || desktopReturnActive || !verificationActive) return;
     setSubmitting(true);
     setErrorState(null);
     try {
-      const result = await postAuth("/api/auth/register-resend", {
+      const result = await postAuth(loginVerificationActive ? "/api/auth/login-request-code" : "/api/auth/register-resend", {
         email: registerVerificationEmail || email.trim(),
       });
       if (!result.ok) {
@@ -604,10 +604,7 @@ export function SiteAuthPage({
   function handleEditRegisterEmail() {
     if (submitting || desktopReturnActive) return;
     setRegisterStep("details");
-    setPassword("");
-    setConfirmPassword("");
-    setRegisterPasswordVisible(false);
-    setRegisterConfirmPasswordVisible(false);
+    setLoginStep("email");
     setVerificationCode("");
     setRegisterVerificationNotice(null);
     setRegisterPreviewCode(null);
@@ -615,8 +612,14 @@ export function SiteAuthPage({
     resetTurnstile();
   }
 
-  async function requestDesktopReturn(clientRedirectUri: string, fallbackRedirectUri: string | null) {
-    if (submitting || desktopReturnActive) return;
+  async function requestDesktopReturn(
+    clientRedirectUri: string,
+    fallbackRedirectUri: string | null,
+    source: DesktopHandoffAttemptSource = "manual",
+  ) {
+    const attemptGuard = desktopHandoffAttemptGuardRef.current;
+    if (submitting || desktopReturnActive || !attemptGuard.begin(source)) return;
+    let dispatchOwnsAttempt = false;
     setSubmitting(true);
     setErrorState(null);
     try {
@@ -632,8 +635,10 @@ export function SiteAuthPage({
         title: content.alreadySignedIn.successTitle,
         body: content.alreadySignedIn.successBody,
       });
-      await queueDesktopReturn(result.clientRedirect);
+      dispatchOwnsAttempt = true;
+      await queueDesktopReturn(result.clientRedirect, source, true);
     } finally {
+      if (!dispatchOwnsAttempt) attemptGuard.finish();
       setSubmitting(false);
     }
   }
@@ -654,7 +659,8 @@ export function SiteAuthPage({
       setSubmitting(true);
       setErrorState(null);
       try {
-        await finishDesktopReturn(desktopReturnPrepared);
+        const retryRedirect = selectDesktopReturnRetryTarget(desktopReturnPrepared);
+        await queueDesktopReturn(retryRedirect, "manual");
       } finally {
         setSubmitting(false);
       }
@@ -665,29 +671,16 @@ export function SiteAuthPage({
     }
   }
 
-  const restartUnsupportedDesktopReturn = useEffectEvent(() => {
-    setDesktopReturnPrepared(null);
-    void handleDesktopReturn();
-  });
-
-  useEffect(() => {
-    if (!desktopReturnPrepared || desktopReturnPending) return;
-    if (!viewerSession.authenticated || mode !== "login" || !effectiveClientRedirectUri) return;
-    if (!isUnsupportedNonLoopbackDesktopReturn(desktopReturnPrepared)) return;
-    restartUnsupportedDesktopReturn();
-  }, [desktopReturnPending, desktopReturnPrepared, effectiveClientRedirectUri, mode, viewerSession.authenticated]);
-
   const autoStartDesktopReturn = useEffectEvent(() => {
-    void handleDesktopReturn();
+    if (!effectiveClientRedirectUri) return;
+    void requestDesktopReturn(effectiveClientRedirectUri, effectiveFallbackRedirectUri, "automatic");
   });
 
   useEffect(() => {
-    if (desktopReturnAutoTriggered) return;
     if (submitting || desktopReturnActive || successState) return;
     if (!viewerSession.authenticated || mode !== "login" || !effectiveClientRedirectUri) return;
-    setDesktopReturnAutoTriggered(true);
     autoStartDesktopReturn();
-  }, [desktopReturnActive, desktopReturnAutoTriggered, effectiveClientRedirectUri, mode, submitting, successState, viewerSession.authenticated]);
+  }, [desktopReturnActive, effectiveClientRedirectUri, mode, submitting, successState, viewerSession.authenticated]);
 
   const autoStartWatchaLogin = useEffectEvent(() => handleWatchaLogin());
 
@@ -698,49 +691,52 @@ export function SiteAuthPage({
     autoStartWatchaLogin();
   }, [mode, oauthErrorCode, requestedProvider, successState, viewerSession.authenticated, watchaLoginDisabled]);
 
-  async function queueDesktopReturn(redirect: SiteAuthClientRedirect) {
-    setDesktopReturnPrepared(redirect);
-    logDesktopReturnEvent("desktop_return_prepared", redirect, {
-      loopbackPermission: loopbackPermissionState,
-    });
-    const loopbackRedirect = resolveLoopbackRedirect(redirect);
-    if (loopbackRedirect) {
-      const permissionState = await queryDesktopReturnPermission(loopbackRedirect.action);
-      setLoopbackPermissionState(permissionState);
-      if (permissionState === "denied" && redirect.method === "post") {
-        logDesktopReturnEvent("desktop_return_blocked", redirect, {
-          detail: "loopback_permission_denied",
-          loopbackPermission: permissionState,
-        });
-        setErrorState({ code: "desktop_return_blocked" });
-        return;
+  async function queueDesktopReturn(
+    redirect: SiteAuthClientRedirect,
+    source: DesktopHandoffAttemptSource = "automatic",
+    attemptAlreadyStarted = false,
+  ) {
+    const attemptGuard = desktopHandoffAttemptGuardRef.current;
+    if (!attemptAlreadyStarted && !attemptGuard.begin(source)) return false;
+
+    try {
+      setDesktopReturnPrepared(redirect);
+      logDesktopReturnEvent("desktop_return_prepared", redirect, {
+        loopbackPermission: loopbackPermissionState,
+      });
+      const loopbackRedirect = resolveLoopbackRedirect(redirect);
+      if (loopbackRedirect) {
+        const permissionState = await queryDesktopReturnPermission(loopbackRedirect.action);
+        setLoopbackPermissionState(permissionState);
+        if (permissionState === "denied" && redirect.method === "post") {
+          logDesktopReturnEvent("desktop_return_blocked", redirect, {
+            detail: "loopback_permission_denied",
+            loopbackPermission: permissionState,
+          });
+          setErrorState({ code: "desktop_return_blocked" });
+          return false;
+        }
       }
+      setDesktopReturnPending(redirect);
+      return await finishDesktopReturn(redirect);
+    } finally {
+      setDesktopReturnPending(null);
+      attemptGuard.finish();
     }
-    setDesktopReturnPending(redirect);
   }
 
-  async function submitDesktopReturn(redirect: SiteAuthClientRedirect) {
+  async function submitDesktopReturn(redirect: SiteAuthClientRedirect): Promise<DesktopReturnSubmission> {
     if (redirect.method === "get") {
       logDesktopReturnEvent("desktop_return_native_attempted", redirect);
       window.location.assign(redirect.action);
-      const nativeLikelyHandled = await waitForDesktopReturnFocusChange();
-      if (nativeLikelyHandled) {
-        logDesktopReturnEvent("desktop_return_native_handoff_likely_succeeded", redirect);
-        return true;
-      }
-      if (redirect.fallback) {
-        logDesktopReturnEvent("desktop_return_fallback_attempted", redirect.fallback, {
-          detail: "native_callback_did_not_take_focus",
-        });
-        return submitDesktopReturn(redirect.fallback);
-      }
-      logDesktopReturnEvent("desktop_return_failed", redirect, {
-        detail: "native_callback_did_not_take_focus",
+      await waitForNativeDesktopReturnCooldown();
+      logDesktopReturnEvent("desktop_return_native_dispatched", redirect, {
+        detail: "native_callback_dispatched_unconfirmed",
       });
-      return false;
+      return "dispatched";
     }
 
-    if (!isLoopbackRedirect(redirect.action)) return false;
+    if (!isLoopbackDesktopReturnUri(redirect.action)) return "failed";
 
     try {
       const response = await fetch(redirect.action, {
@@ -756,7 +752,7 @@ export function SiteAuthPage({
       logDesktopReturnEvent(ok ? "desktop_return_loopback_succeeded" : "desktop_return_failed", redirect, {
         detail: ok ? "loopback_post_ok" : `loopback_http_${response.status}`,
       });
-      return ok;
+      return ok ? "confirmed" : "failed";
     } catch {
       logDesktopReturnEvent("desktop_return_fallback_attempted", redirect, {
         detail: "loopback_form_after_fetch_failed",
@@ -766,12 +762,12 @@ export function SiteAuthPage({
         logDesktopReturnEvent("desktop_return_loopback_form_started", redirect, {
           detail: "loopback_form_after_fetch_failed",
         });
-        return true;
+        return "dispatched";
       }
       logDesktopReturnEvent("desktop_return_failed", redirect, {
         detail: "loopback_fetch_failed_then_form_not_started",
       });
-      return false;
+      return "failed";
     }
   }
 
@@ -923,7 +919,7 @@ export function SiteAuthPage({
               </NoticeCard>
             ) : (
               <form className="mt-9 space-y-4" onSubmit={handleSubmit}>
-                {registerVerificationActive ? (
+                {verificationActive ? (
                   <>
                     <InlineNotice tone="success">{registerVerificationNotice || content.registerVerification.sentBody}</InlineNotice>
                     <div className="rounded-[1rem] border border-[var(--line)] bg-[var(--surface-strong)] px-4 py-3 text-sm leading-6 text-[var(--muted)]">
@@ -932,17 +928,10 @@ export function SiteAuthPage({
                       </span>
                       <span className="mt-1 block font-semibold text-[var(--foreground)]">{registerVerificationEmail || email.trim()}</span>
                     </div>
-                    <AuthField
+                    <VerificationCodeField
                       label={content.fields.emailVerificationCode}
-                      name="verificationCode"
-                      type="text"
-                      inputMode="numeric"
-                      autoComplete="one-time-code"
-                      required
-                      maxLength={6}
                       value={verificationCode}
-                      onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
-                      placeholder={content.fields.emailVerificationCodePlaceholder}
+                      onChange={setVerificationCode}
                     />
                     {registerPreviewCode ? (
                       <InlineNotice tone="success">
@@ -953,18 +942,7 @@ export function SiteAuthPage({
                   </>
                 ) : null}
 
-                {mode === "register" && !registerVerificationActive ? (
-                  <AuthField
-                    label={content.fields.displayName}
-                    name="displayName"
-                    type="text"
-                    value={displayName}
-                    onChange={(event) => setDisplayName(event.target.value)}
-                    placeholder={content.fields.displayNamePlaceholder}
-                  />
-                ) : null}
-
-                {mode !== "reset-password" && !registerVerificationActive ? (
+                {mode !== "reset-password" && !verificationActive ? (
                   <AuthField
                     label={content.fields.email}
                     name="email"
@@ -977,54 +955,6 @@ export function SiteAuthPage({
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                     placeholder={content.fields.emailPlaceholder}
-                  />
-                ) : null}
-
-                {mode === "login" || (mode === "register" && !registerVerificationActive) ? (
-                  <AuthField
-                    label={content.fields.password}
-                    labelActionHref={mode === "login" ? withAuthPageQuery("/forgot-password", locale, effectiveClientRedirectUri, effectiveFallbackRedirectUri, returnToPath) : undefined}
-                    labelActionLabel={mode === "login" ? modeContent.sideActionLabel : undefined}
-                    name="password"
-                    autoComplete={mode === "login" ? "current-password" : "new-password"}
-                    required
-                    minLength={8}
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    placeholder={content.fields.passwordPlaceholder}
-                    type={mode === "register" && registerPasswordVisible ? "text" : "password"}
-                    trailingControl={mode === "register" ? (
-                      <PasswordVisibilityButton
-                        visible={registerPasswordVisible}
-                        showLabel={content.passwordVisibility.show}
-                        hideLabel={content.passwordVisibility.hide}
-                        onToggle={() => setRegisterPasswordVisible((current) => !current)}
-                      />
-                    ) : undefined}
-                    className={mode === "register" ? "pr-12" : undefined}
-                  />
-                ) : null}
-
-                {mode === "register" && !registerVerificationActive ? (
-                  <AuthField
-                    label={content.fields.confirmPassword}
-                    name="confirmPassword"
-                    type={registerConfirmPasswordVisible ? "text" : "password"}
-                    autoComplete="new-password"
-                    required
-                    minLength={8}
-                    value={confirmPassword}
-                    onChange={(event) => setConfirmPassword(event.target.value)}
-                    placeholder={content.fields.confirmPasswordPlaceholder}
-                    trailingControl={(
-                      <PasswordVisibilityButton
-                        visible={registerConfirmPasswordVisible}
-                        showLabel={content.passwordVisibility.show}
-                        hideLabel={content.passwordVisibility.hide}
-                        onToggle={() => setRegisterConfirmPasswordVisible((current) => !current)}
-                      />
-                    )}
-                    className="pr-12"
                   />
                 ) : null}
 
@@ -1095,7 +1025,7 @@ export function SiteAuthPage({
                 {resolvedErrorMessage ? <InlineNotice tone="error">{resolvedErrorMessage}</InlineNotice> : null}
 
                 <button type="submit" disabled={submitDisabled} className={primaryButtonClassName} style={{ boxShadow: "0 22px 38px var(--accent-soft)" }}>
-                  {registerVerificationActive
+                  {verificationActive
                     ? (submitting ? content.registerVerification.verifying : content.registerVerification.verifyAction)
                     : (submitting ? modeContent.submitting : modeContent.submit)}
                 </button>
@@ -1119,7 +1049,7 @@ export function SiteAuthPage({
                     </button>
                   </>
                 ) : null}
-                {registerVerificationActive ? (
+                {verificationActive ? (
                   <div className="grid gap-3 sm:grid-cols-2">
                     <button type="button" onClick={() => void handleResendRegisterCode()} disabled={submitting} className={secondaryButtonClassName}>
                       {content.registerVerification.resendAction}
@@ -1220,30 +1150,51 @@ function AuthField({ label, className = "", ...inputProps }: AuthFieldProps) {
   );
 }
 
-function PasswordVisibilityButton({
-  visible,
-  showLabel,
-  hideLabel,
-  onToggle,
-}: {
-  visible: boolean;
-  showLabel: string;
-  hideLabel: string;
-  onToggle: () => void;
-}) {
-  const Icon = visible ? EyeSlash : Eye;
+function VerificationCodeField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const digits = Array.from({ length: 6 }, (_, index) => value[index] || "");
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   return (
-    <button
-      type="button"
-      aria-label={visible ? hideLabel : showLabel}
-      aria-pressed={visible}
-      onMouseDown={(event) => event.preventDefault()}
-      onClick={onToggle}
-      className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--muted)] transition hover:bg-[var(--surface)] hover:text-[var(--foreground)]"
-    >
-      <Icon size={18} weight="regular" aria-hidden="true" />
-    </button>
+    <label className="block">
+      <span className="mb-2 block text-sm font-medium text-[var(--foreground)]">{label}</span>
+      <span
+        className="relative grid grid-cols-6 gap-2 sm:gap-3"
+        onClick={() => inputRef.current?.focus()}
+      >
+        {digits.map((digit, index) => (
+          <span
+            key={index}
+            aria-hidden="true"
+            className={`flex aspect-square min-w-0 items-center justify-center rounded-[0.9rem] border bg-[var(--surface-strong)] text-xl font-semibold tabular-nums text-[var(--foreground)] transition ${
+              index === Math.min(value.length, 5)
+                ? "border-[var(--accent)] ring-4 ring-[var(--accent-soft)]"
+                : digit
+                  ? "border-[var(--accent-strong)]"
+                  : "border-[var(--line)]"
+            }`}
+          >
+            {digit}
+          </span>
+        ))}
+        <input
+          ref={inputRef}
+          name="verificationCode"
+          type="text"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          required
+          maxLength={6}
+          value={value}
+          onChange={(event) => onChange(event.target.value.replace(/\D/g, "").slice(0, 6))}
+          aria-label={label}
+          className="absolute inset-0 h-full w-full cursor-text opacity-0"
+        />
+      </span>
+    </label>
   );
 }
 
@@ -1313,9 +1264,8 @@ function validateClientInput(
   mode: SiteAuthPageMode,
   values: {
     email: string;
-    password: string;
-    confirmPassword: string;
     registerStep: RegisterStep;
+    loginStep: LoginStep;
     verificationCode: string;
     newPassword: string;
     resetToken: string;
@@ -1326,14 +1276,15 @@ function validateClientInput(
     if (!values.verificationCode.trim()) return "client_verification_code_required";
     return null;
   }
-  if ((mode === "login" || mode === "register") && !values.password.trim()) return "client_password_required";
-  if (mode === "register" && !values.confirmPassword.trim()) return "client_password_confirmation_required";
+  if (mode === "login" && values.loginStep === "verify") {
+    if (!values.verificationCode.trim()) return "client_verification_code_required";
+    return null;
+  }
   if (mode === "reset-password" && !values.newPassword.trim()) return "client_new_password_required";
   if (mode === "reset-password" && !values.resetToken.trim()) return "client_reset_token_required";
-  if ((mode === "register" ? values.password : values.newPassword).trim().length < 8 && (mode === "register" || mode === "reset-password")) {
+  if (mode === "reset-password" && values.newPassword.trim().length < 8) {
     return "auth_password_too_short";
   }
-  if (mode === "register" && values.password !== values.confirmPassword) return "client_password_mismatch";
   return null;
 }
 
@@ -1396,7 +1347,7 @@ function isLoginRiskTurnstileRequired(error: ApiResult["error"] | undefined) {
 }
 
 async function queryDesktopReturnPermission(value: string): Promise<DesktopReturnPermissionState> {
-  if (typeof window === "undefined" || !isLoopbackRedirect(value) || !("permissions" in navigator)) {
+  if (typeof window === "undefined" || !isLoopbackDesktopReturnUri(value) || !("permissions" in navigator)) {
     return "unsupported";
   }
 
@@ -1417,15 +1368,6 @@ async function resolveDesktopReturnFailureCode(redirect: SiteAuthClientRedirect)
   if (!loopbackAction) return "desktop_return_failed";
   const permissionState = await queryDesktopReturnPermission(loopbackAction);
   return permissionState === "denied" ? "desktop_return_blocked" : "desktop_return_failed";
-}
-
-function isLoopbackRedirect(value: string) {
-  try {
-    const parsed = new URL(value);
-    return ["127.0.0.1", "localhost", "::1"].includes(parsed.hostname) && (parsed.protocol === "http:" || parsed.protocol === "https:");
-  } catch {
-    return false;
-  }
 }
 
 function withAuthPageQuery(
@@ -1478,44 +1420,40 @@ function withLocaleQuery(path: string, locale: Locale) {
 function persistRememberedDesktopReturnContext(
   clientRedirectUri: string,
   fallbackRedirectUri: string | null,
-): RememberedDesktopReturnContext {
-  const nextContext = {
+): DesktopReturnContext | null {
+  const nextContext = normalizeRememberedDesktopReturnContext({
     clientRedirectUri,
     fallbackRedirectUri,
     updatedAt: Date.now(),
-  };
+  }, Date.now(), rememberedDesktopReturnContextTtlMs);
 
   if (typeof window !== "undefined") {
     try {
-      window.localStorage.setItem(rememberedDesktopReturnContextStorageKey, JSON.stringify(nextContext));
+      if (nextContext) {
+        window.localStorage.setItem(rememberedDesktopReturnContextStorageKey, JSON.stringify(nextContext));
+      } else {
+        window.localStorage.removeItem(rememberedDesktopReturnContextStorageKey);
+      }
     } catch {}
   }
 
   return nextContext;
 }
 
-function readRememberedDesktopReturnContext(): RememberedDesktopReturnContext | null {
+function readRememberedDesktopReturnContext(): DesktopReturnContext | null {
   if (typeof window === "undefined") return null;
 
   try {
     const raw = window.localStorage.getItem(rememberedDesktopReturnContextStorageKey);
     if (!raw) return null;
 
-    const parsed = JSON.parse(raw) as Partial<RememberedDesktopReturnContext>;
-    const clientRedirectUri = normalizeRememberedDesktopReturnUri(parsed.clientRedirectUri);
-    const fallbackRedirectUri = normalizeRememberedDesktopReturnUri(parsed.fallbackRedirectUri);
-    const updatedAt = typeof parsed.updatedAt === "number" && Number.isFinite(parsed.updatedAt) ? parsed.updatedAt : 0;
-
-    if (!clientRedirectUri || updatedAt <= 0 || Date.now() - updatedAt > rememberedDesktopReturnContextTtlMs) {
+    const parsed = JSON.parse(raw);
+    const context = normalizeRememberedDesktopReturnContext(parsed, Date.now(), rememberedDesktopReturnContextTtlMs);
+    if (!context) {
       clearRememberedDesktopReturnContext();
       return null;
     }
-
-    return {
-      clientRedirectUri,
-      fallbackRedirectUri,
-      updatedAt,
-    };
+    return context;
   } catch {
     clearRememberedDesktopReturnContext();
     return null;
@@ -1530,24 +1468,8 @@ function clearRememberedDesktopReturnContext() {
   } catch {}
 }
 
-function normalizeRememberedDesktopReturnUri(value: unknown): string | null {
-  if (typeof value !== "string" || !value.trim()) return null;
-
-  try {
-    const parsed = new URL(value.trim());
-    if (desktopReturnProtocols.has(parsed.protocol)) return parsed.toString();
-    if ((parsed.protocol === "http:" || parsed.protocol === "https:") && ["127.0.0.1", "localhost", "::1"].includes(parsed.hostname)) {
-      return parsed.toString();
-    }
-  } catch {
-    return null;
-  }
-
-  return null;
-}
-
 async function submitLoopbackFormRedirect(redirect: SiteAuthClientRedirect) {
-  if (typeof document === "undefined" || !isLoopbackRedirect(redirect.action)) return false;
+  if (typeof document === "undefined" || !isLoopbackDesktopReturnUri(redirect.action)) return false;
   const transferStarted = waitForDesktopReturnTransferStart();
   const form = document.createElement("form");
   form.method = "POST";
@@ -1572,10 +1494,10 @@ async function submitLoopbackFormRedirect(redirect: SiteAuthClientRedirect) {
 
 function resolveLoopbackRedirect(redirect: SiteAuthClientRedirect | null) {
   if (!redirect) return null;
-  if (redirect.method === "post" && isLoopbackRedirect(redirect.action)) {
+  if (redirect.method === "post" && isLoopbackDesktopReturnUri(redirect.action)) {
     return redirect;
   }
-  if (redirect.fallback && redirect.fallback.method === "post" && isLoopbackRedirect(redirect.fallback.action)) {
+  if (redirect.fallback && redirect.fallback.method === "post" && isLoopbackDesktopReturnUri(redirect.fallback.action)) {
     return redirect.fallback;
   }
   return null;
@@ -1586,7 +1508,7 @@ function resolveLoopbackRedirectAction(redirect: SiteAuthClientRedirect | null) 
 }
 
 function isUnsupportedNonLoopbackDesktopReturn(redirect: SiteAuthClientRedirect | null) {
-  return Boolean(redirect && redirect.method === "post" && !isLoopbackRedirect(redirect.action));
+  return Boolean(redirect && redirect.method === "post" && !isLoopbackDesktopReturnUri(redirect.action));
 }
 
 function redirectSummary(redirect: SiteAuthClientRedirect) {
@@ -1633,30 +1555,10 @@ function logDesktopReturnEvent(
   }).catch(() => null);
 }
 
-function waitForDesktopReturnFocusChange(timeoutMs = 900) {
-  if (typeof window === "undefined") return Promise.resolve(false);
-  return new Promise<boolean>((resolve) => {
-    let finished = false;
-    const finish = (value: boolean) => {
-      if (finished) return;
-      finished = true;
-      cleanup();
-      resolve(value);
-    };
-    const cleanup = () => {
-      window.clearTimeout(timer);
-      window.removeEventListener("blur", onBlur);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
-    const onBlur = () => finish(true);
-    const onVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
-        finish(true);
-      }
-    };
-    const timer = window.setTimeout(() => finish(false), timeoutMs);
-    window.addEventListener("blur", onBlur, { once: true });
-    document.addEventListener("visibilitychange", onVisibilityChange);
+function waitForNativeDesktopReturnCooldown(timeoutMs = nativeDesktopReturnCooldownMs) {
+  if (typeof window === "undefined") return Promise.resolve();
+  return new Promise<void>((resolve) => {
+    window.setTimeout(resolve, timeoutMs);
   });
 }
 

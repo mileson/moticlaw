@@ -4,10 +4,9 @@ import {
 } from "@/lib/release-manifest";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 const successResponseHeaders = {
-  "Cache-Control": "no-store",
+  "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
 };
 
 const errorResponseHeaders = {

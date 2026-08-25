@@ -17,8 +17,8 @@ export async function generateMetadata({
   );
   const title = locale === "zh" ? "套餐价格 - MotiClaw" : "Pricing & Plans - MotiClaw";
   const description = locale === "zh"
-    ? "查看 MotiClaw Plus 和 Pro 月度套餐：更高的托管模型限额、更多 AI 伙伴，支付后立即生效。"
-    : "Compare MotiClaw Plus and Pro monthly plans: higher hosted-model limits and more AI partners, active right after payment.";
+    ? "查看 MotiClaw Plus 和 Pro 月付、年付套餐：更高的托管模型限额、更多 AI 伙伴，支付后立即生效。"
+    : "Compare MotiClaw Plus and Pro monthly and annual plans: higher hosted-model limits and more AI partners, active right after payment.";
   const canonical = locale === "en" ? "/account/membership?lang=en" : "/account/membership";
   return {
     title,

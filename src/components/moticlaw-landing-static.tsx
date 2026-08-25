@@ -9,8 +9,8 @@ import {
   LinuxLogo,
   MagnifyingGlass,
   Package,
-  PlayCircle,
   Pulse,
+  ArrowRight,
   ShieldCheck,
   Sliders,
   UsersThree,
@@ -40,40 +40,13 @@ const platformOptions: Array<{ key: PlatformKey; group: PlatformGroup }> = [
   { key: "windows-x64", group: "windows" },
 ];
 
-const heroHighlightTerms: Record<Locale, string[]> = {
-  en: ["One person", "local AI partner team", "3 minutes"],
-  zh: ["一个人", "3分钟快速", "本地", "AI 伙伴团队"],
-};
-
-const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-function renderHeroTitle(title: string, locale: Locale) {
-  const terms = heroHighlightTerms[locale];
-  const highlightedTerms = new Set(terms);
-  const termPattern = new RegExp(`(${terms.map(escapeRegExp).join("|")})`, "g");
-
-  return title.split("\n").map((line, lineIndex) => (
-    <span key={`${line}-${lineIndex}`} className={`hero-title-line${locale === "zh" && lineIndex === 1 ? " hero-title-line-nowrap" : ""}`}>
-      {line.split(termPattern).map((part, partIndex) =>
-        highlightedTerms.has(part) ? (
-          <span key={`${part}-${partIndex}`} className="hero-title-highlight">
-            {part}
-          </span>
-        ) : (
-          <span key={`${part}-${partIndex}`}>{part}</span>
-        ),
-      )}
-    </span>
-  ));
-}
-
 type StatItem = { title: string; body: string; icon: Icon; imageUrl: string; accent: string };
 type CapabilityItem = { title: string; body: string; icon: Icon };
 
 const copy = {
   en: {
-    heroTitle: "One person, build\nyour local AI partner team in 3 minutes.",
-    heroBody: "MotiClaw hands repetitive, scattered work to AI assistants so you can stay focused on creation, thinking, and decisions while your data stays on your own device.",
+    heroTitle: "Ideas, creation, and publishing.\nOne workspace.",
+    heroBody: "Stay focused on ideas and expression while AI handles most of the content-production work. Your material and drafts stay together on your device.",
     heroPlatformLabel: "Supported",
     footerLinksLabel: "Keep exploring",
     seoGuides: {
@@ -192,8 +165,8 @@ const copy = {
     },
   },
   zh: {
-    heroTitle: "一个人，3分钟快速\n搭建本地 AI 伙伴团队",
-    heroBody: "MotiClaw 把重复、零散、耗时间的工作交给 AI 助手，让你把精力留给创作、思考与决策，数据始终留在你自己的设备上。",
+    heroTitle: "灵感、创作与发布，\n一站完成",
+    heroBody: "专注创意与表达，让 AI 帮你完成大部分内容创作执行。素材、草稿与成品留在同一个本地工作空间。",
     heroPlatformLabel: "支持",
     footerLinksLabel: "继续浏览",
     seoGuides: {
@@ -205,9 +178,9 @@ const copy = {
     consoleCta: "体验管理台",
     statsSectionTitle: "产品特色",
     stats: [
-      { title: "本地优先", body: "AI 伙伴、文件和日常工作默认留在你自己的设备上。", icon: HardDrives, imageUrl: "/landing/product-features/local-workspace.webp", accent: "本地" },
-      { title: "AI 伙伴开箱即用", body: "选择角色、接入渠道，就能让 AI 伙伴开始处理真实工作。", icon: Package, imageUrl: "/landing/product-features/partner-ready.webp", accent: "伙伴" },
-      { title: "低门槛管理", body: "搜索、筛选、巡查、配置和查看活动记录，都在一个界面里完成。", icon: CursorClick, imageUrl: "/landing/product-features/patrol-console.webp", accent: "管理" },
+      { title: "素材集中在本地", body: "灵感、参考资料与创作文件默认留在自己的设备上。", icon: HardDrives, imageUrl: "/landing/product-features/local-workspace.webp", accent: "素材" },
+      { title: "AI 接手创作执行", body: "从整理、起草到改写，让 AI 完成耗时的内容生产步骤。", icon: Package, imageUrl: "/landing/product-features/partner-ready.webp", accent: "创作" },
+      { title: "发布流程更顺手", body: "在同一个工作空间检查内容、整理版本并继续完成发布。", icon: CursorClick, imageUrl: "/landing/product-features/patrol-console.webp", accent: "发布" },
     ] as StatItem[],
     heroVideo: {
       title: "控制面概览",
@@ -216,12 +189,12 @@ const copy = {
     },
     capabilities: {
       eyebrow: "能力",
-      body: "从安装部署到日常运维，从 AI 伙伴入职到全周期管理，一个界面全搞定。",
+      body: "从第一条灵感到可以发布的成品，把内容创作中最耗时的执行步骤交给 AI。",
       cards: [
-        { title: "AI 伙伴工区", body: "入职、身份、运行状态、渠道接入——一个视图管理 AI 伙伴的全生命周期。", icon: Kanban },
-        { title: "一键管理", body: "安装、修复、重启、更新，点一下就完成，不用记任何命令。", icon: Wrench },
-        { title: "灵活配置", body: "AI 模型、网关、系统参数，可视化配置面板让每项设置都清晰可控。", icon: Sliders },
-        { title: "数据可视分析", body: "Token 消耗、调用频次、成本趋势，多维度数据一目了然。", icon: ChartBar },
+        { title: "灵感与素材库", body: "把零散想法、文档和参考资料放进一个可继续创作的工作空间。", icon: Kanban },
+        { title: "内容起草与改写", body: "让 AI 根据你的材料完成提纲、初稿、润色和多版本适配。", icon: Wrench },
+        { title: "创作流程编排", body: "把重复的内容生产步骤整理成可复用流程，减少来回切换。", icon: Sliders },
+        { title: "发布前检查", body: "集中核对内容、素材和版本，确认无误后继续完成发布。", icon: ChartBar },
       ] as CapabilityItem[],
     },
     stories: {
@@ -1103,6 +1076,20 @@ function consoleConfigItems(partner: ConsolePreviewPartner, locale: Locale) {
   ];
 }
 
+function consolePartnerPayload(partner: ConsolePreviewPartner, locale: Locale) {
+  return {
+    name: partner.name,
+    role: partner.role,
+    status: partner.status,
+    channel: consoleChannelLabel(partner.primaryChannel, locale),
+    avatarUrl: partner.avatarUrl,
+    skills: consolePartnerSkills(partner, locale),
+    tasks: consolePartnerTasks(partner, locale),
+    activities: consolePartnerActivities(partner, locale),
+    configItems: consoleConfigItems(partner, locale),
+  };
+}
+
 function ConsolePartnerCard({
   partner,
   content,
@@ -1119,33 +1106,8 @@ function ConsolePartnerCard({
   const actionTone = isConnectAction
     ? "bg-[#f7d99b] text-[#6f4305] shadow-[0_12px_24px_-18px_rgba(180,83,9,0.42)] dark:bg-[#9a6a28] dark:text-[#fff2cf]"
     : "bg-[#4171d1] text-white shadow-[0_12px_28px_-16px_rgba(65,113,209,0.62)] dark:bg-[#5b86e5] dark:text-white";
-  const skills = consolePartnerSkills(partner, locale);
-  const tasks = consolePartnerTasks(partner, locale);
-  const activities = consolePartnerActivities(partner, locale);
-  const configItems = consoleConfigItems(partner, locale);
-  const primaryChannelLabel = consoleChannelLabel(partner.primaryChannel, locale);
-  const modalData = {
-    name: partner.name,
-    role: partner.role,
-    status: partner.status,
-    channel: primaryChannelLabel,
-    avatarUrl: partner.avatarUrl,
-    skills,
-    tasks,
-    activities,
-    configItems,
-  };
-  const modalDataAttributes = {
-    "data-partner-name": modalData.name,
-    "data-partner-role": modalData.role,
-    "data-partner-status": modalData.status,
-    "data-partner-channel": modalData.channel,
-    "data-partner-avatar": modalData.avatarUrl,
-    "data-partner-skills": JSON.stringify(modalData.skills),
-    "data-partner-tasks": JSON.stringify(modalData.tasks),
-    "data-partner-activities": JSON.stringify(modalData.activities),
-    "data-partner-config": JSON.stringify(modalData.configItems),
-  };
+  const modalData = consolePartnerPayload(partner, locale);
+  const { skills, tasks } = modalData;
 
   return (
     <article
@@ -1160,8 +1122,12 @@ function ConsolePartnerCard({
         type="button"
         className="relative block aspect-[16/9] w-full cursor-pointer overflow-hidden border-b border-[#e7edf5] bg-[#eef3fa] text-left dark:border-[#263143] dark:bg-[#0f1520]"
         data-console-action="activity"
-        aria-label={locale === "zh" ? `查看${partner.name}的最近活动` : `View ${partner.name} recent activity`}
-        {...modalDataAttributes}
+        aria-label={
+          locale === "zh"
+            ? `${partner.status} ${partner.timeLabel}，查看${partner.name}的最近活动`
+            : `${partner.status} ${partner.timeLabel}. View ${partner.name} recent activity`
+        }
+        data-partner-key={partner.name}
       >
         <Image src={partner.coverUrl} alt="" fill sizes={mobile ? "340px" : "(min-width: 1280px) 300px, (min-width: 768px) 50vw, 100vw"} className="console-scene-poster object-cover" />
         <video
@@ -1217,7 +1183,7 @@ function ConsolePartnerCard({
             data-console-action={isConnectAction ? "config" : "chat"}
             aria-label={partner.primaryAction}
             title={partner.primaryAction}
-            {...modalDataAttributes}
+            data-partner-key={partner.name}
           >
             {primaryIcon ? <Image src={primaryIcon} alt="" width={17} height={17} /> : <Wrench size={15} aria-hidden="true" />}
           </button>
@@ -1270,7 +1236,7 @@ function ConsolePartnerCard({
             type="button"
             className="flex h-12 items-center justify-between gap-2 rounded-2xl border border-[#e2e8f0] bg-[#f8fafc] px-3 text-left text-[#64748b] transition hover:border-[#b8c8dd] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#93b4f7] dark:border-[#2f3a4d] dark:bg-[#0f1520] dark:text-[#9ca9ba] dark:hover:border-[#4b5d75] dark:hover:bg-[#172033]"
             data-console-action="skills"
-            {...modalDataAttributes}
+            data-partner-key={partner.name}
           >
             <span className="inline-flex min-w-0 items-center gap-1.5">
               <Wrench size={15} aria-hidden="true" />
@@ -1282,7 +1248,7 @@ function ConsolePartnerCard({
             type="button"
             className="flex h-12 items-center justify-between gap-2 rounded-2xl border border-[#e2e8f0] bg-[#f8fafc] px-3 text-left text-[#64748b] transition hover:border-[#b8c8dd] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#93b4f7] dark:border-[#2f3a4d] dark:bg-[#0f1520] dark:text-[#9ca9ba] dark:hover:border-[#4b5d75] dark:hover:bg-[#172033]"
             data-console-action="tasks"
-            {...modalDataAttributes}
+            data-partner-key={partner.name}
           >
             <span className="inline-flex min-w-0 items-center gap-1.5">
               <Pulse size={15} aria-hidden="true" />
@@ -1297,7 +1263,7 @@ function ConsolePartnerCard({
             type="button"
             className={`inline-flex h-12 min-w-0 items-center justify-center gap-2 overflow-hidden rounded-2xl px-3 text-sm font-bold ${actionTone}`}
             data-console-action={isConnectAction ? "config" : "chat"}
-            {...modalDataAttributes}
+            data-partner-key={partner.name}
           >
             {primaryIcon ? (
               <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/85 dark:bg-white/92">
@@ -1310,7 +1276,7 @@ function ConsolePartnerCard({
             type="button"
             className="inline-flex h-12 items-center justify-center rounded-2xl border border-[#dce5ef] bg-white px-3 text-sm font-bold text-[#334155] shadow-[0_8px_18px_rgba(15,23,42,0.04)] transition hover:border-[#b8c8dd] hover:bg-[#f8fafc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#93b4f7] dark:border-[#2f3a4d] dark:bg-[#111827] dark:text-[#dbe6f3] dark:hover:border-[#4b5d75] dark:hover:bg-[#172033]"
             data-console-action="config"
-            {...modalDataAttributes}
+            data-partner-key={partner.name}
           >
             {content.configLabel}
           </button>
@@ -1439,6 +1405,9 @@ export function MotiClawLandingStatic({
 
   const landingData = {
     locale,
+    partners: Object.fromEntries(
+      consolePreview.partners.map((partner) => [partner.name, consolePartnerPayload(partner, locale)]),
+    ),
     artifacts: Object.fromEntries(
       Object.entries(releaseManifest.artifacts).map(([key, value]) => [
         key,
@@ -1462,77 +1431,108 @@ export function MotiClawLandingStatic({
   };
 
   return (
-    <main className="site-shell relative overflow-x-hidden">
+    <main className="site-shell content-workspace-home relative overflow-x-hidden">
       <SiteHeaderStatic locale={locale} path="/" variant="landing" />
 
       <div className="site-page-shell mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pt-[4.75rem] pb-8 sm:px-8 sm:pt-16 lg:px-10">
-        <section id="top" className="hero-section grid flex-1 gap-8 pb-10 pt-4 sm:gap-12 sm:pb-16 sm:pt-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)] lg:items-center lg:pb-24 lg:pt-16">
-          <div className="hero-copy rise-in space-y-6 lg:pl-8 xl:pl-12" style={{ animationDelay: "60ms" }}>
-            <div className="space-y-5">
-              <h1 className="hero-title display max-w-4xl text-[clamp(2.6rem,11vw,4rem)] leading-[1.02] font-semibold text-[var(--foreground)] sm:leading-[1.04] sm:text-6xl lg:max-w-[58rem] lg:text-[3.9rem] xl:text-7xl">
-                {renderHeroTitle(content.heroTitle, locale)}
-              </h1>
-              <p className="hero-subtitle max-w-2xl text-base leading-7 text-[var(--muted)] sm:text-xl sm:leading-8">{content.heroBody}</p>
-              <div className="hero-actions flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-start sm:gap-5">
-                <div className="hero-platform-strip inline-flex items-center gap-2 rounded-full py-2">
-                  <span className="hero-platform-strip-label text-[0.8rem] font-medium tracking-[0.08em]">{content.heroPlatformLabel}</span>
-                  <a
-                    href="https://hermes-agent.nousresearch.com/"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hero-platform-pill"
-                    title="Hermes Agent"
-                    aria-label="Hermes Agent"
-                  >
-                    <img src="/brand/hermes-agent.png" alt="" aria-hidden="true" className="hero-platform-icon hero-platform-icon-rounded" />
-                  </a>
-                  <a href="https://openclaw.ai/" target="_blank" rel="noreferrer" className="hero-platform-pill" title="OpenClaw" aria-label="OpenClaw">
-                    <img src="/brand/openclaw.svg" alt="" aria-hidden="true" className="hero-platform-icon" />
-                  </a>
+        <section id="top" className="hero-section hero-client-stage flex flex-1 items-center justify-center pb-10 pt-4 sm:pb-16 sm:pt-10 lg:pb-20 lg:pt-10">
+          <div className="hero-device-composition rise-in" style={{ animationDelay: "60ms" }}>
+            <h1
+              lang={locale === "zh" ? "zh-CN" : "en"}
+              className="hero-device-title display font-semibold text-[var(--foreground)]"
+            >
+              {content.heroTitle.replace(/\s*\n\s*/g, locale === "zh" ? "" : " ")}
+            </h1>
+
+            <div className="hero-laptop-stage">
+              <picture>
+                <source
+                  type="image/avif"
+                  srcSet="/landing/moticlaw-macbook-white-screen-v4-768.avif 768w, /landing/moticlaw-macbook-white-screen-v4-1152.avif 1152w, /landing/moticlaw-macbook-white-screen-v4-1536.avif 1536w"
+                  sizes="(max-width: 640px) calc(100vw + 1.5rem), 62rem"
+                />
+                <source
+                  type="image/webp"
+                  srcSet="/landing/moticlaw-macbook-white-screen-v4-768.webp 768w, /landing/moticlaw-macbook-white-screen-v4-1152.webp 1152w, /landing/moticlaw-macbook-white-screen-v4-1536.webp 1536w"
+                  sizes="(max-width: 640px) calc(100vw + 1.5rem), 62rem"
+                />
+                <img
+                  src="/landing/moticlaw-macbook-white-screen-v4.png"
+                  alt={locale === "zh" ? "打开 MotiClaw 内容创作工作台的 MacBook" : "A MacBook displaying the MotiClaw content workspace"}
+                  className="hero-laptop-device"
+                  width={1536}
+                  height={1024}
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
+                />
+              </picture>
+              <div className="hero-laptop-screen">
+                <div className="hero-brand-lockup">
+                  <picture>
+                    <source
+                      type="image/webp"
+                      srcSet="/brand/moticlaw-eye-look-v1-96.webp 96w, /brand/moticlaw-eye-look-v1-192.webp 192w"
+                      sizes="(max-width: 640px) 36px, 84px"
+                    />
+                    <img
+                      src="/brand/moticlaw-eye-look.gif"
+                      alt=""
+                      width={512}
+                      height={512}
+                      className="hero-motion-logo"
+                      aria-hidden="true"
+                    />
+                  </picture>
+                  <span>MotiClaw</span>
                 </div>
+                <p className="hero-product-label">
+                  {locale === "zh" ? "本地内容创作 AI 工作台" : "Local AI content creation workspace"}
+                </p>
                 <button
                   type="button"
                   data-open-download
-                  className="hero-primary-cta btn-base btn-primary shrink-0 min-w-[11.375rem] justify-center px-7 py-4"
+                  data-analytics-event="download_open"
+                  data-analytics-label="hero"
+                  className="hero-client-cta"
                 >
-                  <DownloadSimple size={16} weight="regular" aria-hidden="true" />
-                  {content.primaryCta}
+                  <span>{content.primaryCta}</span>
+                  <ArrowRight className="hero-client-cta-arrow" size={16} weight="regular" aria-hidden="true" />
                 </button>
               </div>
             </div>
           </div>
-
-          <div className="rise-in relative" style={{ animationDelay: "180ms" }}>
-            <button
-              type="button"
-              id="hero-video-frame"
-              className="hero-video-frame hero-video-motion ml-auto overflow-hidden rounded-[1.5rem]"
-              aria-label={content.heroVideo.promoButton}
-            >
-              <div className="hero-video-stage">
-                <div aria-hidden="true" id="hero-video-placeholder" className="hero-video-placeholder" />
-                <video
-                  id="hero-video"
-                  className="hero-video"
-                  loop
-                  muted
-                  playsInline
-                  preload="none"
-                  data-src="/videos/hero-right.mp4"
-                  aria-label={content.heroVideo.title}
-                ></video>
-
-                <div className="hero-promo-overlay" aria-hidden="true">
-                  <PlayCircle size={48} weight="fill" />
-                  <span>{content.heroVideo.promoButton}</span>
-                </div>
-              </div>
-            </button>
-          </div>
         </section>
 
         <div className="content-stream">
+          <section id="about" className="cv-auto fade-up scroll-mt-24 py-12 text-center sm:py-16" style={{ animationDelay: "210ms" }} aria-labelledby="moticlaw-definition-title">
+            <h2 id="moticlaw-definition-title" className="mx-auto max-w-3xl text-3xl font-semibold tracking-[-0.05em] text-[var(--foreground)] sm:text-4xl">
+              {locale === "zh" ? "MotiClaw 是什么？" : "What is MotiClaw?"}
+            </h2>
+            <div itemScope itemType="https://schema.org/Answer" data-answer-first="true">
+              <p itemProp="text" className="mx-auto mt-5 max-w-3xl text-base leading-8 text-[var(--muted)] sm:text-lg">
+                {locale === "zh"
+                  ? "MotiClaw 是一款本地内容创作 AI 工作台：把灵感、素材、创作与发布收进同一个工作空间，让 AI 完成整理、起草、改写和发布准备，工作数据默认留在你的设备上。"
+                  : "MotiClaw is a local AI content creation workspace that brings ideas, source material, creation, and publishing together while AI handles organization, drafting, rewriting, and publishing preparation. Work data stays on your device by default."}
+              </p>
+              <p className="mx-auto mt-3 max-w-3xl text-xs leading-6 text-[var(--muted)] sm:text-sm">
+                {locale === "zh" ? (
+                  <>
+                    隐私设计参考 <a className="underline decoration-[var(--line)] underline-offset-4 hover:text-[var(--foreground)]" href="https://www.nist.gov/privacy-framework/frequently-asked-questions" target="_blank" rel="noreferrer">美国国家标准与技术研究院（NIST）</a> 对隐私框架的说明：<q cite="https://www.nist.gov/privacy-framework/frequently-asked-questions">identify and manage privacy risk</q>。
+                  </>
+                ) : (
+                  <>
+                    Privacy design reference: the <a className="underline decoration-[var(--line)] underline-offset-4 hover:text-[var(--foreground)]" href="https://www.nist.gov/privacy-framework/frequently-asked-questions" target="_blank" rel="noreferrer">U.S. National Institute of Standards and Technology (NIST)</a> describes its framework as helping organizations <q cite="https://www.nist.gov/privacy-framework/frequently-asked-questions">identify and manage privacy risk</q>.
+                  </>
+                )}
+              </p>
+            </div>
+          </section>
+
           <section id="ai-partner-console-preview" className="cv-auto fade-up scroll-mt-24 pb-0 pt-0" style={{ animationDelay: "240ms" }}>
+            <h2 className="sr-only">
+              {locale === "zh" ? "在一个工作台管理内容创作伙伴" : "Manage content creation partners in one workspace"}
+            </h2>
             <div className="overflow-visible rounded-[1rem] shadow-[0_26px_70px_rgba(23,33,43,0.16)] dark:shadow-[0_30px_80px_rgba(0,0,0,0.42)]">
               <div className="overflow-hidden rounded-[1rem] border border-[#d2dbe8] bg-[#f7f9fc] text-[#17212b] dark:border-[#2f3a4d] dark:bg-[#0f1520] dark:text-[#eef4fb]">
                 <div className="flex min-h-12 items-center justify-between gap-3 border-b border-[#dce4eb] bg-white px-4 py-3 dark:border-[#263143] dark:bg-[#151a24]">
@@ -1624,12 +1624,12 @@ export function MotiClawLandingStatic({
             <div className="product-feature-shell">
               <p className="product-feature-eyebrow">{content.statsSectionTitle}</p>
               <h2 className="product-feature-title">
-                {locale === "zh" ? "像管理团队一样管理 AI 伙伴" : "Manage AI partners like a real team"}
+                {locale === "zh" ? "把创作从零散步骤，变成一条连续路径" : "Turn scattered creation steps into one continuous path"}
               </h2>
               <p className="product-feature-body">
                 {locale === "zh"
-                  ? "你可以先从一个本地工作区开始，把常用 AI 伙伴接进飞书或微信，再用同一个管理台查看状态、任务和最近活动。"
-                  : "Start from one local workspace, bring your AI partners into Feishu or WeChat, then check status, tasks, and recent activity from the same console."}
+                  ? "收集灵感与素材，交给 AI 完成整理、起草和改写，再在同一个工作空间准备发布。你保留观点与判断，把执行交给 AI。"
+                  : "Collect ideas and source material, let AI organize, draft, and adapt them, then prepare to publish from the same workspace."}
               </p>
               <div className="product-feature-grid">
               {content.stats.map((item) => (
@@ -1719,7 +1719,7 @@ export function MotiClawLandingStatic({
                 <a
                   key={item.href}
                   href={item.href}
-                  className="group block rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[0_12px_28px_rgba(23,20,17,0.05)] transition hover:-translate-y-0.5 hover:border-[rgba(228,145,92,0.32)] hover:bg-[var(--surface-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(239,123,67,0.35)]"
+                  className="group block rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[0_12px_28px_rgba(23,20,17,0.05)] transition hover:-translate-y-0.5 hover:border-[rgba(0,0,0,0.32)] hover:bg-[var(--surface-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(0,0,0,0.35)]"
                 >
                   <h3 className="text-[1.08rem] font-semibold tracking-[-0.03em] text-[var(--foreground)]">{item.title}</h3>
                   <p className="mt-2 min-h-[3rem] text-sm leading-6 text-[var(--muted)]">{item.body}</p>
@@ -1753,21 +1753,21 @@ export function MotiClawLandingStatic({
 
           <SiteFaqSection locale={locale} />
 
-          <section id="footer" className="cv-auto fade-up scroll-mt-24 py-16" style={{ animationDelay: "340ms" }}>
+          <section id="contact" className="cv-auto fade-up scroll-mt-24 py-16" style={{ animationDelay: "340ms" }}>
             <p className="section-eyebrow-lg mb-7 text-center">{content.contact.eyebrow}</p>
             <div className="contact-grid mx-auto flex max-w-[34rem] flex-col flex-wrap items-center justify-center gap-4 sm:flex-row sm:gap-8 lg:gap-10">
               <button
                 type="button"
                 aria-haspopup="dialog"
                 data-open-contact
-                className="contact-link-card group relative grid aspect-square w-[11.4rem] max-w-full cursor-pointer place-items-center overflow-hidden rounded-[1.35rem] border border-[rgba(22,29,44,0.08)] bg-[rgba(255,255,255,0.72)] px-3 py-3 text-center shadow-[0_10px_28px_rgba(23,20,17,0.07)] backdrop-blur-[10px] transition duration-200 hover:-translate-y-1 hover:border-[rgba(228,145,92,0.3)] hover:shadow-[0_16px_36px_rgba(23,20,17,0.11)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(239,123,67,0.35)]"
+                className="contact-link-card group relative grid aspect-square w-[11.4rem] max-w-full cursor-pointer place-items-center overflow-hidden rounded-[1.35rem] border border-[rgba(22,29,44,0.08)] bg-[rgba(255,255,255,0.72)] px-3 py-3 text-center shadow-[0_10px_28px_rgba(23,20,17,0.07)] backdrop-blur-[10px] transition duration-200 hover:-translate-y-1 hover:border-[rgba(0,0,0,0.3)] hover:shadow-[0_16px_36px_rgba(23,20,17,0.11)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(0,0,0,0.35)]"
               >
                 <span
                   aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 opacity-45 [background-image:radial-gradient(circle_at_18%_30%,rgba(23,20,17,0.08)_0_1.5px,transparent_3px),radial-gradient(circle_at_74%_22%,rgba(228,145,92,0.12)_0_1.5px,transparent_3px),radial-gradient(circle_at_82%_68%,rgba(23,20,17,0.06)_0_1px,transparent_2px),radial-gradient(circle_at_22%_80%,rgba(228,145,92,0.1)_0_1px,transparent_2px)] dark:opacity-35 dark:[background-image:radial-gradient(circle_at_18%_30%,rgba(255,255,255,0.12)_0_1.5px,transparent_3px),radial-gradient(circle_at_74%_22%,rgba(255,179,109,0.1)_0_1.5px,transparent_3px),radial-gradient(circle_at_82%_68%,rgba(255,255,255,0.08)_0_1px,transparent_2px),radial-gradient(circle_at_22%_80%,rgba(255,179,109,0.08)_0_1px,transparent_2px)]"
+                  className="pointer-events-none absolute inset-0 opacity-45 [background-image:radial-gradient(circle_at_18%_30%,rgba(23,20,17,0.08)_0_1.5px,transparent_3px),radial-gradient(circle_at_74%_22%,rgba(0,0,0,0.12)_0_1.5px,transparent_3px),radial-gradient(circle_at_82%_68%,rgba(23,20,17,0.06)_0_1px,transparent_2px),radial-gradient(circle_at_22%_80%,rgba(0,0,0,0.1)_0_1px,transparent_2px)] dark:opacity-35 dark:[background-image:radial-gradient(circle_at_18%_30%,rgba(255,255,255,0.12)_0_1.5px,transparent_3px),radial-gradient(circle_at_74%_22%,rgba(255,255,255,0.1)_0_1.5px,transparent_3px),radial-gradient(circle_at_82%_68%,rgba(255,255,255,0.08)_0_1px,transparent_2px),radial-gradient(circle_at_22%_80%,rgba(255,255,255,0.08)_0_1px,transparent_2px)]"
                 />
                 <span className="relative flex h-full w-full flex-col items-center justify-center">
-                  <span className="grid h-[2.35rem] w-[2.35rem] place-items-center rounded-full bg-[rgba(239,123,67,0.1)] text-[var(--accent-strong)] dark:bg-[rgba(255,179,109,0.1)] dark:text-[var(--accent-strong)]">
+                  <span className="grid h-[2.35rem] w-[2.35rem] place-items-center rounded-full bg-[rgba(0,0,0,0.1)] text-[var(--accent-strong)] dark:bg-[rgba(255,255,255,0.1)] dark:text-[var(--accent-strong)]">
                     <UsersThree size={28} weight="regular" aria-hidden="true" />
                   </span>
                   <span className="mt-2 block text-[1rem] font-semibold tracking-[-0.04em] text-[var(--foreground)] md:text-[1.05rem]">
@@ -1911,12 +1911,12 @@ export function MotiClawLandingStatic({
       {/* Contact QR modal */}
       <div
         id="contact-qr-modal"
-        className="landing-modal fixed inset-0 z-[82] grid place-items-center bg-[rgba(38,31,24,0.32)] px-4 py-4 backdrop-blur-[10px] dark:bg-[rgba(0,0,0,0.7)]"
+        className="landing-modal fixed inset-0 z-[82] grid place-items-center bg-[rgba(0,0,0,0.32)] px-4 py-4 backdrop-blur-[10px] dark:bg-[rgba(0,0,0,0.7)]"
         role="presentation"
         hidden
       >
         <section
-          className="relative flex max-h-[88vh] flex-col gap-3 overflow-y-auto rounded-[1rem] border border-[rgba(74,55,39,0.14)] bg-[#fffaf3] p-3 text-[#231d18] shadow-[0_20px_64px_rgba(45,35,25,0.2)] dark:border-[rgba(255,255,255,0.1)] dark:bg-[#090a0d] dark:text-[#f7f7fb] sm:p-4"
+          className="relative flex max-h-[88vh] flex-col gap-3 overflow-y-auto rounded-[1rem] border border-[rgba(0,0,0,0.14)] bg-white p-3 text-[#111111] shadow-[0_20px_64px_rgba(0,0,0,0.2)] dark:border-[rgba(255,255,255,0.1)] dark:bg-[#090a0d] dark:text-[#f7f7fb] sm:p-4"
           style={{ width: "min(25.5rem, calc(100vw - 2rem))" }}
           role="dialog"
           aria-modal="true"
@@ -1924,7 +1924,7 @@ export function MotiClawLandingStatic({
         >
           <button
             type="button"
-            className="absolute right-2.5 top-2.5 inline-flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(74,55,39,0.14)] bg-[rgba(255,255,255,0.76)] text-[#231d18] transition hover:border-[rgba(239,123,67,0.35)] hover:text-[var(--accent-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(239,123,67,0.35)] dark:border-[rgba(255,255,255,0.1)] dark:bg-[rgba(255,255,255,0.05)] dark:text-[#f7f7fb]"
+            className="absolute right-2.5 top-2.5 inline-flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(0,0,0,0.14)] bg-[rgba(255,255,255,0.76)] text-[#111111] transition hover:border-[rgba(0,0,0,0.35)] hover:text-[var(--accent-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(0,0,0,0.24)] dark:border-[rgba(255,255,255,0.1)] dark:bg-[rgba(255,255,255,0.05)] dark:text-[#f7f7fb]"
             data-close-modal
             aria-label={content.download.close}
             title={content.download.close}

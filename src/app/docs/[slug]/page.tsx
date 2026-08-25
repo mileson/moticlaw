@@ -1,18 +1,13 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { detectLocale, type Locale } from "@/lib/locale";
+import type { Locale } from "@/lib/locale";
 import { getDocPage } from "@/lib/docs-content";
 import { DocsLayout } from "@/components/docs-layout";
+import { resolveSeoLocale, type SeoSearchParams } from "@/components/seo-resource-locale";
+import { getCanonicalPath, getLanguageAlternates, toAbsoluteSiteUrl } from "@/components/seo-resource-manifest";
 
 type DocsParams = Promise<{ slug: string }>;
-type DocsSearchParams = Promise<{ lang?: string }>;
-
-function resolveLocale(langParam: string | undefined, acceptLanguage: string | null): Locale {
-  if (langParam === "en") return "en";
-  if (langParam === "zh") return "zh";
-  return detectLocale(acceptLanguage);
-}
+type DocsSearchParams = SeoSearchParams;
 
 export async function generateMetadata({
   params,
@@ -22,15 +17,13 @@ export async function generateMetadata({
   searchParams: DocsSearchParams;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const { lang } = await searchParams;
+  const locale = await resolveSeoLocale(searchParams);
   const doc = slug === "index" ? undefined : getDocPage(slug);
   if (!doc) return {};
 
-  const requestHeaders = await headers();
-  const locale = resolveLocale(lang, requestHeaders.get("accept-language"));
   const path = `/docs/${doc.slug}`;
   const title = `${doc.title[locale]} - MotiClaw Docs`;
-  const canonical = lang === "zh" || lang === "en" ? `${path}?lang=${lang}` : path;
+  const canonical = getCanonicalPath(path, locale);
   const leadVisual = doc.visuals[0];
 
   return {
@@ -38,11 +31,7 @@ export async function generateMetadata({
     description: doc.description[locale],
     alternates: {
       canonical,
-      languages: {
-        "zh-CN": `${path}?lang=zh`,
-        en: `${path}?lang=en`,
-        "x-default": path,
-      },
+      languages: getLanguageAlternates(path),
     },
     openGraph: {
       type: "article",
@@ -72,13 +61,12 @@ export default async function DocPage({
   searchParams: DocsSearchParams;
 }) {
   const { slug } = await params;
-  const { lang } = await searchParams;
+  const locale = await resolveSeoLocale(searchParams);
   const doc = slug === "index" ? undefined : getDocPage(slug);
   if (!doc) notFound();
 
-  const requestHeaders = await headers();
-  const locale = resolveLocale(lang, requestHeaders.get("accept-language"));
-  const canonicalUrl = `https://www.moticlaw.com/docs/${doc.slug}?lang=${locale}`;
+  const canonicalUrl = toAbsoluteSiteUrl(getCanonicalPath(`/docs/${doc.slug}`, locale));
+  const docsIndexUrl = toAbsoluteSiteUrl(getCanonicalPath("/docs", locale));
   const jsonLd = [
     {
       "@context": "https://schema.org",
@@ -112,7 +100,7 @@ export default async function DocPage({
           "@type": "ListItem",
           position: 1,
           name: locale === "zh" ? "产品文档" : "Documentation",
-          item: `https://www.moticlaw.com/docs?lang=${locale}`,
+          item: docsIndexUrl,
         },
         { "@type": "ListItem", position: 2, name: doc.title[locale], item: canonicalUrl },
       ],

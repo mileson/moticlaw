@@ -1,49 +1,64 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { Fraunces, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { detectLocale, localeToHtmlLang } from "@/lib/locale";
 import { SupportChat } from "@/components/support-chat";
+import { SiteAnalytics } from "@/components/site-analytics";
 
 const siteUrl = new URL("https://www.moticlaw.com");
-const siteTitle = "MotiClaw 官网 - 本地 AI 伙伴与智能体控制平台";
+const siteTitle = "MotiClaw｜本地内容创作 AI 工作台";
 const siteDescription =
-  "MotiClaw 是一个本地优先的 AI 伙伴与智能体控制平台，支持 macOS 与 Windows 下载部署。适合 FDE、老板、超级个体和 AI 独立开发者，用一个平台完成本地部署、Agent 管理和 AI 助手团队协作。";
+  "MotiClaw 是本地内容创作 AI 工作台，把灵感、素材、创作与发布收进一个本地工作空间，让 AI 完成大部分内容创作执行，数据默认留在你的设备上。";
 const siteKeywords = [
   "MotiClaw",
-  "本地 AI 伙伴",
-  "AI 智能体",
-  "本地 AI",
-  "本地智能体",
-  "AI 伙伴",
-  "智能体控制平台",
-  "本地部署 AI",
-  "Agent 管理",
-  "AI 助手",
-  "FDE AI 落地",
-  "超级个体 AI 平台",
+  "本地内容创作",
+  "AI 内容创作",
+  "内容创作工作台",
+  "本地 AI 工作台",
+  "AI 写作",
+  "素材管理",
+  "内容发布",
+  "创作者工具",
   "桌面版下载",
   "下载安装",
 ];
 
-const displayFont = Fraunces({
+const displayFont = localFont({
+  src: "./fonts/fraunces-latin-variable.woff2",
   variable: "--font-display",
-  subsets: ["latin"],
+  weight: "100 900",
+  style: "normal",
   display: "swap",
+  adjustFontFallback: "Times New Roman",
 });
 
-const bodyFont = IBM_Plex_Sans({
+const bodyFont = localFont({
+  src: "./fonts/ibm-plex-sans-latin-variable.woff2",
   variable: "--font-body",
-  subsets: ["latin"],
+  weight: "100 700",
+  style: "normal",
   display: "swap",
+  adjustFontFallback: "Arial",
 });
 
-const monoFont = IBM_Plex_Mono({
+const monoFont = localFont({
+  src: [
+    {
+      path: "./fonts/ibm-plex-mono-latin-400.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/ibm-plex-mono-latin-500.woff2",
+      weight: "500",
+      style: "normal",
+    },
+  ],
   variable: "--font-code",
-  subsets: ["latin"],
-  weight: ["400", "500"],
   display: "swap",
   preload: false,
+  adjustFontFallback: "Arial",
 });
 
 export const metadata: Metadata = {
@@ -78,7 +93,7 @@ export const metadata: Metadata = {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "MotiClaw - 本地优先的 AI 伙伴与智能体控制平台",
+        alt: "MotiClaw - 本地内容创作 AI 工作台",
       },
     ],
   },
@@ -147,6 +162,7 @@ export default async function RootLayout({
           }}
         />
         {children}
+        <SiteAnalytics locale={locale} />
         <SupportChat />
       </body>
     </html>

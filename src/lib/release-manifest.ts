@@ -117,7 +117,10 @@ export function transformOssLatestRelease(payload: OssLatestReleaseManifest): Re
 export async function fetchLatestReleaseManifest(url = ossLatestReleaseManifestUrl): Promise<ReleaseManifest | null> {
   try {
     const response = await fetch(url, {
-      cache: "no-store",
+      next: {
+        revalidate: 3600,
+        tags: ["moticlaw-release-manifest"],
+      },
     });
     if (!response.ok) return null;
     const payload = (await response.json()) as OssLatestReleaseManifest;

@@ -96,17 +96,25 @@ export async function requestSiteAuthJson<T extends JsonRecord = JsonRecord>(
   return payload as T;
 }
 
-export async function readSiteAuthSession(): Promise<SiteAuthSession> {
+export async function readSiteAuthSession(
+  options: { purpose?: "page" | "handoff" } = {},
+): Promise<SiteAuthSession> {
   const cookieStore = await cookies();
   const token = cookieStore.get(siteSessionCookieName)?.value?.trim() || "";
   if (!token) return unauthenticatedSession();
 
   try {
-    const payload = await requestSiteAuthJson("/v1/auth/session", { token });
+    const payload = await requestSiteAuthJson(resolveSiteAuthSessionCheckPath(options.purpose), { token });
     return normalizeSiteAuthSession(payload);
   } catch {
     return unauthenticatedSession();
   }
+}
+
+export function resolveSiteAuthSessionCheckPath(purpose: "page" | "handoff" = "page") {
+  if (purpose !== "handoff") return "/v1/auth/session";
+  const configuredPath = optionalString(process.env.MOTICLAW_SITE_AUTH_HANDOFF_SESSION_CHECK_PATH);
+  return configuredPath?.startsWith("/") ? configuredPath : "/v1/auth/session";
 }
 
 export function sessionCookieOptions(expiresAt: string | null | undefined) {
