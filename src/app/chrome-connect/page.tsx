@@ -8,6 +8,7 @@ import { readSiteAuthSession, requestSiteAuthJson, siteSessionCookieName } from 
 
 export const metadata: Metadata = {
   title: "连接 MotiClaw Chrome 插件",
+  alternates: { canonical: "/chrome-connect" },
   robots: { index: false, follow: false },
 };
 
