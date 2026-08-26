@@ -109,7 +109,7 @@ export async function POST(
         },
         headers: forwardedHeaders,
       });
-      return json({ ok: true, message: optionalString(result.message), verification: { email: optionalString(result.email) || optionalString(body.email) || "", expiresAt: optionalString(result.expires_at) || null }, previewCode: optionalString(result.preview_code) ?? null });
+      return json({ ok: true, message: "验证码已经发送，请查看邮箱后继续。", verification: { email: optionalString(result.email) || optionalString(body.email) || "", expiresAt: optionalString(result.expires_at) || null }, previewCode: optionalString(result.preview_code) ?? null });
     }
 
     if (action === "login-verify") {
@@ -145,7 +145,7 @@ export async function POST(
 
     if (action === "register") {
       const turnstile = resolveTurnstileForwardContext(body, request);
-      const result = await requestSiteAuthJson<AuthRegisterCodePayload>("/v1/auth/register/request-code", {
+      const result = await requestSiteAuthJson<AuthRegisterCodePayload>("/v1/auth/login/request-code", {
         method: "POST",
         body: {
           email: optionalString(body.email) || "",
@@ -155,11 +155,9 @@ export async function POST(
         },
         headers: forwardedHeaders,
       });
-      const cookieStore = await cookies();
-      cookieStore.delete(siteSessionCookieName);
       return json({
         ok: true,
-        message: optionalString(result.message) || "验证码已经发送，请先完成邮箱验证。",
+        message: "验证码已经发送，请查看邮箱后继续。",
         verification: {
           email: optionalString(result.email) || optionalString(body.email) || "",
           expiresAt: optionalString(result.expires_at) || null,
@@ -169,7 +167,7 @@ export async function POST(
     }
 
     if (action === "register-resend") {
-      const result = await requestSiteAuthJson<AuthRegisterCodePayload>("/v1/auth/register/resend", {
+      const result = await requestSiteAuthJson<AuthRegisterCodePayload>("/v1/auth/login/request-code", {
         method: "POST",
         body: {
           email: optionalString(body.email) || "",
@@ -179,7 +177,7 @@ export async function POST(
       });
       return json({
         ok: true,
-        message: optionalString(result.message) || "验证码已经重新发送。",
+        message: "验证码已经发送，请查看邮箱后继续。",
         verification: {
           email: optionalString(result.email) || optionalString(body.email) || "",
           expiresAt: optionalString(result.expires_at) || null,
@@ -191,7 +189,7 @@ export async function POST(
     if (action === "register-verify") {
       const clientRedirectUri = resolveClientRedirectUri(body);
       const fallbackRedirectUri = resolveFallbackRedirectUri(body);
-      const result = await requestSiteAuthJson<AuthSessionPayload>("/v1/auth/register/verify", {
+      const result = await requestSiteAuthJson<AuthSessionPayload>("/v1/auth/login/verify", {
         method: "POST",
         body: {
           email: optionalString(body.email) || "",
@@ -219,7 +217,7 @@ export async function POST(
       }
       return json({
         ok: true,
-        message: "账号已经创建好。现在可以继续使用 MotiClaw。",
+        message: "邮箱验证成功，已经登录。",
       });
     }
 

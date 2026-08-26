@@ -419,7 +419,7 @@ export function SiteAuthPage({
           setLoginTurnstileRequired(false);
           setLoginStep("verify");
           setRegisterVerificationEmail(result.verification?.email || email.trim());
-          setRegisterVerificationNotice(result.message || content.registerVerification.sentBody);
+          setRegisterVerificationNotice(content.registerVerification.sentBody);
           setRegisterPreviewCode(result.previewCode || null);
           setVerificationCode("");
           resetTurnstile();
@@ -487,7 +487,7 @@ export function SiteAuthPage({
         }
         setRegisterStep("verify");
         setRegisterVerificationEmail(result.verification?.email || email.trim());
-        setRegisterVerificationNotice(result.message || content.registerVerification.sentBody);
+        setRegisterVerificationNotice(content.registerVerification.sentBody);
         setRegisterPreviewCode(result.previewCode || null);
         setVerificationCode("");
         resetTurnstile();
@@ -593,7 +593,7 @@ export function SiteAuthPage({
         setErrorState(result.error || {});
         return;
       }
-      setRegisterVerificationNotice(result.message || content.registerVerification.resentBody);
+      setRegisterVerificationNotice(content.registerVerification.resentBody);
       setRegisterPreviewCode(result.previewCode || null);
       setVerificationCode("");
     } finally {
@@ -1065,9 +1065,11 @@ export function SiteAuthPage({
             {!successState && !(viewerSession.authenticated && mode === "login") ? (
               <div className="mt-7 text-center text-sm text-[var(--muted)]">
                 <span>{modeContent.footerLead} </span>
-                <a href={footerHref} className={subtleLinkClassName}>
-                  {modeContent.footerAction}
-                </a>
+                {modeContent.footerAction ? (
+                  <a href={footerHref} className={subtleLinkClassName}>
+                    {modeContent.footerAction}
+                  </a>
+                ) : null}
               </div>
             ) : null}
 

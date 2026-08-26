@@ -33,12 +33,13 @@ export default async function AuthPage({
 
   if (authPage === "auth") {
     const legacyMode = normalizeAuthPageMode(firstString(rawSearchParams.mode));
-    if (legacyMode) redirect(legacyAuthRedirectPath(legacyMode, rawSearchParams));
+    if (legacyMode) redirect(legacyAuthRedirectPath(legacyMode === "register" ? "login" : legacyMode, rawSearchParams));
     notFound();
   }
 
   const pageMode = earlyPageMode;
   if (!pageMode) notFound();
+  if (pageMode === "register") redirect(legacyAuthRedirectPath("login", rawSearchParams));
 
   const requestedLanguage = firstString(rawSearchParams.lang);
   const locale = detectLocale(
