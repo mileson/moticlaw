@@ -1,3 +1,4 @@
+
 type JsonRecord = Record<string, unknown>;
 type BillingLocale = "en" | "zh";
 
@@ -41,6 +42,30 @@ export type SiteMembershipStatus = {
   expiresAt: string | null;
   planId: string | null;
   maxAgents: number | null;
+};
+
+export type SiteMembershipUpgradeQuote = {
+  quoteId: string;
+  kind: "purchase" | "renewal" | "upgrade";
+  targetPlanId: string;
+  targetTier: string;
+  targetName: string;
+  listAmountCents: number;
+  creditAmountCents: number;
+  payableAmountCents: number;
+  currency: "CNY";
+  durationDays: number;
+  catalogRevision: string | null;
+  calculatedAt: string;
+  estimatedExpiresAt: string | null;
+  currentMembership: {
+    planId: string | null;
+    tier: string;
+    expiresAt: string;
+    remainingSeconds: number;
+    remainingDays: number;
+    paidAmountCents: number;
+  } | null;
 };
 
 export type SitePointPlan = {
@@ -106,6 +131,7 @@ export type SitePointRechargeOrder = {
   expiresAt: string | null;
   createdAt: string;
   updatedAt: string;
+  membershipPricing: SiteMembershipUpgradeQuote | null;
 };
 
 export function normalizeMembershipCatalog(value: unknown): SiteBillingCatalog {
@@ -170,6 +196,46 @@ export function normalizeMembershipStatus(value: unknown): SiteMembershipStatus 
     expiresAt: optionalString(item?.expires_at ?? item?.expiresAt),
     planId: optionalString(item?.plan_id ?? item?.planId),
     maxAgents: maxAgentsOf(maxAgentsValue, 8),
+  };
+}
+
+export function normalizeMembershipUpgradeQuote(value: unknown): SiteMembershipUpgradeQuote | null {
+  const item = recordOf(value);
+  const quoteId = optionalString(item?.quote_id ?? item?.quoteId);
+  const kind = item?.kind;
+  const targetPlanId = optionalString(item?.target_plan_id ?? item?.targetPlanId);
+  if (!item || !quoteId || !targetPlanId || (kind !== "purchase" && kind !== "renewal" && kind !== "upgrade")) {
+    return null;
+  }
+
+  const current = recordOf(item.current_membership ?? item.currentMembership);
+  const currentExpiresAt = optionalString(current?.expires_at ?? current?.expiresAt);
+  const currentMembership = current && currentExpiresAt
+    ? {
+        planId: optionalString(current.plan_id ?? current.planId),
+        tier: optionalString(current.tier) ?? "free",
+        expiresAt: currentExpiresAt,
+        remainingSeconds: numberOf(current.remaining_seconds ?? current.remainingSeconds),
+        remainingDays: numberOf(current.remaining_days ?? current.remainingDays),
+        paidAmountCents: numberOf(current.paid_amount_cents ?? current.paidAmountCents),
+      }
+    : null;
+
+  return {
+    quoteId,
+    kind,
+    targetPlanId,
+    targetTier: optionalString(item.target_tier ?? item.targetTier) ?? "free",
+    targetName: optionalString(item.target_name ?? item.targetName) ?? targetPlanId,
+    listAmountCents: numberOf(item.list_amount_cents ?? item.listAmountCents),
+    creditAmountCents: numberOf(item.credit_amount_cents ?? item.creditAmountCents),
+    payableAmountCents: numberOf(item.payable_amount_cents ?? item.payableAmountCents),
+    currency: "CNY",
+    durationDays: numberOf(item.duration_days ?? item.durationDays),
+    catalogRevision: optionalString(item.catalog_revision ?? item.catalogRevision),
+    calculatedAt: stringOf(item.calculated_at ?? item.calculatedAt),
+    estimatedExpiresAt: optionalString(item.estimated_expires_at ?? item.estimatedExpiresAt),
+    currentMembership,
   };
 }
 
@@ -267,6 +333,7 @@ export function normalizeOrder(value: unknown): SitePointRechargeOrder | null {
     expiresAt: optionalString(item.expires_at ?? item.expiresAt),
     createdAt: stringOf(item.created_at ?? item.createdAt),
     updatedAt: stringOf(item.updated_at ?? item.updatedAt),
+    membershipPricing: normalizeMembershipUpgradeQuote(item.membership_pricing ?? item.membershipPricing),
   };
 }
 

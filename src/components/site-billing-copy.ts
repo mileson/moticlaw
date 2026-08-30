@@ -44,6 +44,17 @@ export type SiteBillingCopy = {
   createOrder: string;
   continuePayment: string;
   creatingOrder: string;
+  upgradeTitle: string;
+  upgradeSubtitle: string;
+  upgradeListPrice: string;
+  upgradeCredit: string;
+  upgradeTotal: string;
+  upgradeEffective: string;
+  upgradeEndsCurrent: string;
+  upgradeConfirm: string;
+  upgradeCancel: string;
+  upgradePreviewLoading: string;
+  upgradePreviewRetry: string;
   statusLabel: string;
   timeLabel: string;
   typeLabel: string;
@@ -132,6 +143,17 @@ export const siteBillingCopy: Record<"en" | "zh", SiteBillingCopy> = {
     createOrder: "Activate now",
     continuePayment: "Continue payment",
     creatingOrder: "Creating order...",
+    upgradeTitle: "Confirm upgrade to {plan}",
+    upgradeSubtitle: "Your remaining Plus value is applied automatically · upgrade right after payment",
+    upgradeListPrice: "{plan}",
+    upgradeCredit: "Plus · {days} days remaining",
+    upgradeTotal: "Pay now",
+    upgradeEffective: "Active right after payment · estimated valid until {date}",
+    upgradeEndsCurrent: "Your current Plus plan ends after the upgrade succeeds",
+    upgradeConfirm: "Confirm upgrade and pay {amount}",
+    upgradeCancel: "Not now",
+    upgradePreviewLoading: "Calculating your upgrade price",
+    upgradePreviewRetry: "Try again",
     statusLabel: "Status",
     timeLabel: "Time",
     typeLabel: "Type",
@@ -196,6 +218,10 @@ export const siteBillingCopy: Record<"en" | "zh", SiteBillingCopy> = {
       sub2api_not_ready: "Recharge cannot be completed right now. Please try again later.",
       subscription_plan_not_found: "This recharge option is not available. Refresh and choose again.",
       subscription_order_not_found: "This order is no longer available. Refresh and try again.",
+      membership_quote_changed: "Your plan or price changed · we've refreshed the upgrade price for you",
+      membership_upgrade_requires_support: "This upgrade needs help from support · your current plan remains unchanged",
+      membership_upgrade_source_missing: "We couldn't verify the remaining value of your current plan · contact support before upgrading",
+      membership_upgrade_preview_invalid: "We couldn't calculate this upgrade right now · try again shortly",
       point_ledger_kind_invalid: "Choose a valid points record filter.",
       site_billing_http_502: "The recharge service is temporarily unavailable. Please try again shortly.",
     },
@@ -246,6 +272,17 @@ export const siteBillingCopy: Record<"en" | "zh", SiteBillingCopy> = {
     createOrder: "立即开通",
     continuePayment: "继续支付",
     creatingOrder: "正在创建订单...",
+    upgradeTitle: "确认升级到 {plan}",
+    upgradeSubtitle: "Plus 剩余价值将自动抵扣，支付成功后立即升级",
+    upgradeListPrice: "{plan}",
+    upgradeCredit: "Plus 剩余 {days} 天抵扣",
+    upgradeTotal: "本次支付",
+    upgradeEffective: "支付成功后立即生效 · 预计有效期至 {date}",
+    upgradeEndsCurrent: "原 Plus 套餐将在升级成功后结束",
+    upgradeConfirm: "确认升级并支付 {amount}",
+    upgradeCancel: "暂不升级",
+    upgradePreviewLoading: "正在计算本次升级价格",
+    upgradePreviewRetry: "重新计算",
     statusLabel: "状态",
     timeLabel: "时间",
     typeLabel: "类型",
@@ -310,6 +347,10 @@ export const siteBillingCopy: Record<"en" | "zh", SiteBillingCopy> = {
       sub2api_not_ready: "当前暂时无法完成充值，请稍后再试。",
       subscription_plan_not_found: "这个充值档位暂不可用，请刷新后重新选择。",
       subscription_order_not_found: "这笔订单已经不可用，请刷新后再试。",
+      membership_quote_changed: "你的套餐或价格刚刚发生变化，我们已为你重新计算升级价格",
+      membership_upgrade_requires_support: "这次升级需要客服协助，当前套餐不会受到影响",
+      membership_upgrade_source_missing: "暂时无法核对当前套餐的剩余价值，请联系客服后再升级",
+      membership_upgrade_preview_invalid: "暂时无法计算这次升级价格，请稍后再试",
       point_ledger_kind_invalid: "请选择有效的积分记录类型。",
       site_billing_http_502: "充值服务暂时不可用，请稍后再试。",
     },

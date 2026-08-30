@@ -2,7 +2,7 @@
 
 import { ArrowLeft, Copy, SignOut, User, X } from "@phosphor-icons/react";
 import Link from "next/link";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import type { Locale } from "@/lib/locale";
 import { usePageScrollLock } from "@/lib/page-scroll-lock";
 import type { SitePointRechargeOrder } from "@/lib/site-billing";
@@ -195,23 +195,107 @@ export function OrdersTable<Plan extends NamedPlanLike>({
 export function ModalShell({
   title,
   subtitle,
+  heading,
+  description,
+  variant = "compact",
   onClose,
   children,
 }: {
   title: string;
   subtitle?: string;
+  heading?: string;
+  description?: string;
+  variant?: "compact" | "upgrade";
   onClose: () => void;
   children: ReactNode;
 }) {
   usePageScrollLock(true);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  const headingId = useId();
+  const labelId = useId();
+  const descriptionId = useId();
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    const focusableSelector = [
+      "button:not([disabled])",
+      "[href]",
+      "input:not([disabled])",
+      "select:not([disabled])",
+      "textarea:not([disabled])",
+      "[tabindex]:not([tabindex='-1'])",
+    ].join(",");
+    const focusFirst = () => {
+      const focusable = Array.from(panel.querySelectorAll<HTMLElement>(focusableSelector));
+      (focusable[0] ?? panel).focus();
+    };
+    const frame = window.requestAnimationFrame(focusFirst);
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onCloseRef.current();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = Array.from(panel.querySelectorAll<HTMLElement>(focusableSelector));
+      if (!focusable.length) {
+        event.preventDefault();
+        panel.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", onKeyDown);
+      previousFocus?.focus();
+    };
+  }, []);
 
   return (
-    <div className="billing-modal-backdrop" role="dialog" aria-modal="true" onClick={onClose}>
-      <div className="billing-modal-panel billing-modal-panel-compact" onClick={(event) => event.stopPropagation()}>
+    <div
+      className="billing-modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={heading || subtitle ? headingId : labelId}
+      aria-describedby={description ? descriptionId : !heading && subtitle ? labelId : undefined}
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <div ref={panelRef} className={`billing-modal-panel billing-modal-panel-${variant}`} tabIndex={-1}>
         <div className="billing-modal-head">
           <div className="billing-modal-heading">
-            <p className="billing-panel-label">{title}</p>
-            {subtitle ? <h2 className="billing-panel-title">{subtitle}</h2> : null}
+            {heading ? (
+              <>
+                <h2 id={headingId} className="billing-panel-title">{heading}</h2>
+                {description ? <p id={descriptionId} className="billing-modal-description">{description}</p> : null}
+              </>
+            ) : (
+              <>
+                <p id={labelId} className="billing-panel-label">{title}</p>
+                {subtitle ? <h2 id={headingId} className="billing-panel-title">{subtitle}</h2> : null}
+              </>
+            )}
           </div>
           <div className="billing-modal-head-side">
             <button type="button" className="billing-modal-close" onClick={onClose} aria-label={title}>

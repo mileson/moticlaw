@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowClockwise, CheckCircle, Crown, Receipt, Sparkle, WarningCircle } from "@phosphor-icons/react";
+import { ArrowClockwise, CheckCircle, Crown, Info, Receipt, Sparkle, WarningCircle } from "@phosphor-icons/react";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -23,13 +23,16 @@ import {
   resolveBillingError,
 } from "@/components/site-billing-shared";
 import { siteBillingCopy } from "@/components/site-billing-copy";
+import styles from "@/components/site-membership-upgrade.module.css";
 import type { Locale } from "@/lib/locale";
 import type { SiteAuthSession } from "@/lib/site-auth";
 import {
   normalizeMembershipStatus,
+  normalizeMembershipUpgradeQuote,
   normalizeOrder,
   type SiteBillingCatalog,
   type SiteMembershipStatus,
+  type SiteMembershipUpgradeQuote,
   type SitePointRechargeOrder,
 } from "@/lib/site-billing";
 
@@ -37,6 +40,7 @@ type ApiResult = {
   ok?: boolean;
   orders?: unknown[];
   order?: unknown;
+  quote?: unknown;
   error?: {
     code?: string;
     message?: string;
@@ -93,6 +97,10 @@ export function SiteMembershipPage({
   const [creating, setCreating] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [upgradeQuote, setUpgradeQuote] = useState<SiteMembershipUpgradeQuote | null>(null);
+  const [previewingUpgrade, setPreviewingUpgrade] = useState(false);
+  const [upgradePreviewError, setUpgradePreviewError] = useState<string | null>(null);
   const [message, setMessage] = useState<{ kind: "success" | "error" | "info"; title: string; body?: string } | null>(null);
   const [paymentNotice, setPaymentNotice] = useState<PaymentNotice | null>(null);
   const autoCheckoutAttemptRef = useRef<string | null>(null);
@@ -118,6 +126,8 @@ export function SiteMembershipPage({
       : content.signedOutBody;
   const paymentPlan = planMap.get(activeOrder?.planId || selectedPlanId || "");
   const paymentPlanValue = paymentPlan ? localizedPlanName(paymentPlan, locale) : content.awaitingPayment;
+  const upgradePlan = upgradeQuote ? planMap.get(upgradeQuote.targetPlanId) ?? null : null;
+  const upgradePlanName = upgradePlan ? localizedPlanName(upgradePlan, locale) : upgradeQuote?.targetName || paymentPlanValue;
   const paymentPointsValue = paymentPlan
     ? paymentPlan.maxAgents === null
       ? content.unlimitedAgentsValue
@@ -144,7 +154,7 @@ export function SiteMembershipPage({
       membershipStatus.tier.toLowerCase() === autoCheckoutPlan.tier.toLowerCase(),
   );
 
-  async function createOrder(planId: string) {
+  async function createOrder(planId: string, quoteId?: string) {
     setSelectedPlanId(planId);
     setActiveOrder(null);
     setPaymentModalOpen(true);
@@ -154,7 +164,7 @@ export function SiteMembershipPage({
     try {
       const payload = (await requestBilling("/api/billing/membership/orders", {
         method: "POST",
-        body: { planId },
+        body: { planId, ...(quoteId ? { quoteId } : {}) },
       })) as ApiResult;
       const order = normalizeOrder(payload.order);
       if (!order) throw new Error("payment_qr_missing");
@@ -167,11 +177,66 @@ export function SiteMembershipPage({
       }
     } catch (error) {
       const resolved = resolveBillingError(error, content.errors);
+      if (quoteId && resolved.code === "membership_quote_changed") {
+        setPaymentModalOpen(false);
+        setMessage({ kind: "info", title: resolved.message });
+        await previewUpgrade(planId);
+        return;
+      }
       setPaymentNotice({ kind: "error", title: resolved.message });
       setMessage({ kind: "error", title: resolved.message });
     } finally {
       setCreating(false);
     }
+  }
+
+  async function previewUpgrade(planId: string) {
+    setSelectedPlanId(planId);
+    setUpgradeQuote(null);
+    setUpgradePreviewError(null);
+    setPreviewingUpgrade(true);
+    setUpgradeModalOpen(true);
+    setMessage(null);
+    try {
+      const payload = (await requestBilling("/api/billing/membership/orders/preview", {
+        method: "POST",
+        body: { planId },
+      })) as ApiResult;
+      const quote = normalizeMembershipUpgradeQuote(payload.quote);
+      if (!quote) throw new Error("membership_upgrade_preview_invalid");
+      if (quote.kind !== "upgrade") {
+        setUpgradeModalOpen(false);
+        await createOrder(planId);
+        return;
+      }
+      setUpgradeQuote(quote);
+    } catch (error) {
+      const resolved = resolveBillingError(error, content.errors);
+      setUpgradePreviewError(resolved.message);
+    } finally {
+      setPreviewingUpgrade(false);
+    }
+  }
+
+  function beginCheckout(planId: string, pendingOrder: SitePointRechargeOrder | null) {
+    setSelectedPlanId(planId);
+    if (pendingOrder) {
+      setActiveOrder(pendingOrder);
+      setPaymentNotice(null);
+      setPaymentModalOpen(true);
+      return;
+    }
+    const targetPlan = planMap.get(planId);
+    const isPlusToProUpgrade = Boolean(
+      membershipStatus?.active &&
+      membershipStatus.tier.toLowerCase() === "plus" &&
+      targetPlan?.tier.toLowerCase() === "pro",
+    );
+    if (isPlusToProUpgrade) {
+      void previewUpgrade(planId);
+      return;
+    }
+    void createOrder(planId);
   }
 
   async function refreshOrder(order: SitePointRechargeOrder, options?: { showPendingNotice?: boolean }) {
@@ -245,7 +310,12 @@ export function SiteMembershipPage({
       return;
     }
 
-    void createOrder(autoCheckoutPlanId);
+    const targetPlan = planMap.get(autoCheckoutPlanId);
+    if (membershipStatus?.active && membershipStatus.tier.toLowerCase() === "plus" && targetPlan?.tier.toLowerCase() === "pro") {
+      void previewUpgrade(autoCheckoutPlanId);
+    } else {
+      void createOrder(autoCheckoutPlanId);
+    }
     // The deep link should fire only once for the server-resolved initial target.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoCheckoutPlanId, signedIn, unavailable, autoCheckoutPlanAlreadyActive]);
@@ -341,7 +411,7 @@ export function SiteMembershipPage({
                 <span>{content.unavailable}</span>
               </div>
             ) : (
-              <div className="billing-plan-card-grid">
+              <div className={`billing-plan-card-grid ${styles.planGrid}`}>
                 {plans.map((plan) => {
                   const highlighted = plan.planId === selectedPlanId;
                   const pendingOrder = findPendingOrderForPlan(orders, plan.planId);
@@ -383,7 +453,7 @@ export function SiteMembershipPage({
                             type="button"
                             className="billing-plan-card-action billing-plan-card-action-primary"
                             disabled={creating}
-                            onClick={() => void createOrder(plan.planId)}
+                            onClick={() => beginCheckout(plan.planId, pendingOrder)}
                           >
                             {creating && selectedPlanId === plan.planId
                               ? content.creatingOrder
@@ -433,6 +503,77 @@ export function SiteMembershipPage({
           </section>
         ) : null}
       </div>
+
+      {upgradeModalOpen ? (
+        <ModalShell
+          title={template(content.upgradeTitle, { plan: upgradePlanName })}
+          heading={template(content.upgradeTitle, { plan: upgradePlanName })}
+          description={content.upgradeSubtitle}
+          variant="upgrade"
+          onClose={() => {
+            if (creating) return;
+            setUpgradeModalOpen(false);
+          }}
+        >
+          {previewingUpgrade ? (
+            <div className="billing-upgrade-loading" role="status" aria-live="polite">
+              <ArrowClockwise size={22} weight="regular" aria-hidden="true" />
+              <span>{content.upgradePreviewLoading}</span>
+            </div>
+          ) : upgradeQuote ? (
+            <div className="billing-upgrade-sheet">
+              <div className="billing-upgrade-lines">
+                <div className="billing-upgrade-line">
+                  <span>{template(content.upgradeListPrice, { plan: upgradePlanName })}</span>
+                  <strong>{formatMoney(upgradeQuote.listAmountCents)}</strong>
+                </div>
+                <div className="billing-upgrade-line">
+                  <span>{template(content.upgradeCredit, { days: formatRemainingDays(upgradeQuote.currentMembership?.remainingDays) })}</span>
+                  <strong>-{formatMoney(upgradeQuote.creditAmountCents)}</strong>
+                </div>
+              </div>
+
+              <div className="billing-upgrade-total">
+                <span>{content.upgradeTotal}</span>
+                <strong>{formatMoney(upgradeQuote.payableAmountCents)}</strong>
+              </div>
+
+              {upgradeQuote.estimatedExpiresAt ? (
+                <div className="billing-upgrade-effective">
+                  <CheckCircle size={21} weight="regular" aria-hidden="true" />
+                  <span>{template(content.upgradeEffective, { date: formatDateTime(upgradeQuote.estimatedExpiresAt, locale) })}</span>
+                </div>
+              ) : null}
+
+              <div className="billing-upgrade-note">
+                <Info size={18} weight="regular" aria-hidden="true" />
+                <span>{content.upgradeEndsCurrent}</span>
+              </div>
+
+              <button
+                type="button"
+                className="billing-upgrade-confirm"
+                disabled={creating}
+                onClick={() => {
+                  setUpgradeModalOpen(false);
+                  void createOrder(upgradeQuote.targetPlanId, upgradeQuote.quoteId);
+                }}
+              >
+                {creating ? content.creatingOrder : template(content.upgradeConfirm, { amount: formatMoney(upgradeQuote.payableAmountCents) })}
+              </button>
+              <button type="button" className="billing-upgrade-cancel" disabled={creating} onClick={() => setUpgradeModalOpen(false)}>
+                {content.upgradeCancel}
+              </button>
+            </div>
+          ) : (
+            <div className="billing-upgrade-error" role="alert">
+              <WarningCircle size={24} weight="regular" aria-hidden="true" />
+              <p>{upgradePreviewError || content.errors.site_billing_http_502}</p>
+              <button type="button" onClick={() => void previewUpgrade(selectedPlanId)}>{content.upgradePreviewRetry}</button>
+            </div>
+          )}
+        </ModalShell>
+      ) : null}
 
       {paymentModalOpen ? (
         <ModalShell title={content.paymentSectionTitle} subtitle={content.scanTitle} onClose={() => setPaymentModalOpen(false)}>
@@ -548,4 +689,13 @@ function withLangAndView(locale: Locale, path: string, view: MembershipView) {
 
 function isPaymentWaiting(order: SitePointRechargeOrder) {
   return order.status === "created" || order.status === "pending";
+}
+
+function template(value: string, replacements: Record<string, string>) {
+  return Object.entries(replacements).reduce((result, [key, replacement]) => result.replaceAll(`{${key}}`, replacement), value);
+}
+
+function formatRemainingDays(value: number | undefined) {
+  if (!Number.isFinite(value)) return "-";
+  return Math.max(1, Math.ceil(value || 0)).toLocaleString("en-US");
 }
