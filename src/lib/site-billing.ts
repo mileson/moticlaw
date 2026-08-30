@@ -52,6 +52,8 @@ export type SiteMembershipUpgradeQuote = {
   targetName: string;
   listAmountCents: number;
   creditAmountCents: number;
+  creditStatus: "not_applicable" | "applied" | "unavailable";
+  creditSource: "paid_order" | "manual_grant" | null;
   payableAmountCents: number;
   currency: "CNY";
   durationDays: number;
@@ -199,6 +201,37 @@ export function normalizeMembershipStatus(value: unknown): SiteMembershipStatus 
   };
 }
 
+export function shouldPreviewMembershipUpgrade(
+  currentMembership: Pick<SiteMembershipStatus, "active" | "tier"> | null | undefined,
+  targetPlan: Pick<SiteMembershipPlan, "tier"> | null | undefined,
+) {
+  return Boolean(
+    currentMembership?.active &&
+      currentMembership.tier.toLowerCase() === "plus" &&
+      targetPlan?.tier.toLowerCase() === "pro",
+  );
+}
+
+export function isMembershipPlanCurrent(
+  currentMembership: Pick<SiteMembershipStatus, "active" | "tier" | "planId"> | null | undefined,
+  targetPlan: Pick<SiteMembershipPlan, "planId" | "tier"> | null | undefined,
+) {
+  if (!currentMembership?.active || !targetPlan) return false;
+  if (currentMembership.planId) return currentMembership.planId === targetPlan.planId;
+  return currentMembership.tier.toLowerCase() === targetPlan.tier.toLowerCase();
+}
+
+export function resolveMembershipUpgradeTargetName(
+  plans: SiteMembershipPlan[],
+  targetPlanId: string | null,
+  quotedTargetName: string | null | undefined,
+  locale: BillingLocale,
+  fallback: string,
+) {
+  const targetPlan = targetPlanId ? plans.find((plan) => plan.planId === targetPlanId) ?? null : null;
+  return targetPlan?.nameI18n[locale] || targetPlan?.name || quotedTargetName?.trim() || targetPlanId || fallback;
+}
+
 export function normalizeMembershipUpgradeQuote(value: unknown): SiteMembershipUpgradeQuote | null {
   const item = recordOf(value);
   const quoteId = optionalString(item?.quote_id ?? item?.quoteId);
@@ -220,6 +253,17 @@ export function normalizeMembershipUpgradeQuote(value: unknown): SiteMembershipU
         paidAmountCents: numberOf(current.paid_amount_cents ?? current.paidAmountCents),
       }
     : null;
+  const creditAmountCents = numberOf(item.credit_amount_cents ?? item.creditAmountCents);
+  const creditStatusValue = item.credit_status ?? item.creditStatus;
+  const creditStatus = creditStatusValue === "not_applicable" || creditStatusValue === "applied" || creditStatusValue === "unavailable"
+    ? creditStatusValue
+    : creditAmountCents > 0
+      ? "applied"
+      : kind === "upgrade"
+        ? "unavailable"
+        : "not_applicable";
+  const creditSourceValue = item.credit_source ?? item.creditSource;
+  const creditSource = creditSourceValue === "paid_order" || creditSourceValue === "manual_grant" ? creditSourceValue : null;
 
   return {
     quoteId,
@@ -228,7 +272,9 @@ export function normalizeMembershipUpgradeQuote(value: unknown): SiteMembershipU
     targetTier: optionalString(item.target_tier ?? item.targetTier) ?? "free",
     targetName: optionalString(item.target_name ?? item.targetName) ?? targetPlanId,
     listAmountCents: numberOf(item.list_amount_cents ?? item.listAmountCents),
-    creditAmountCents: numberOf(item.credit_amount_cents ?? item.creditAmountCents),
+    creditAmountCents,
+    creditStatus,
+    creditSource,
     payableAmountCents: numberOf(item.payable_amount_cents ?? item.payableAmountCents),
     currency: "CNY",
     durationDays: numberOf(item.duration_days ?? item.durationDays),

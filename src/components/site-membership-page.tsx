@@ -27,9 +27,12 @@ import styles from "@/components/site-membership-upgrade.module.css";
 import type { Locale } from "@/lib/locale";
 import type { SiteAuthSession } from "@/lib/site-auth";
 import {
+  isMembershipPlanCurrent,
   normalizeMembershipStatus,
   normalizeMembershipUpgradeQuote,
   normalizeOrder,
+  resolveMembershipUpgradeTargetName,
+  shouldPreviewMembershipUpgrade,
   type SiteBillingCatalog,
   type SiteMembershipStatus,
   type SiteMembershipUpgradeQuote,
@@ -98,6 +101,7 @@ export function SiteMembershipPage({
   const [refreshing, setRefreshing] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [upgradeTargetPlanId, setUpgradeTargetPlanId] = useState<string | null>(null);
   const [upgradeQuote, setUpgradeQuote] = useState<SiteMembershipUpgradeQuote | null>(null);
   const [previewingUpgrade, setPreviewingUpgrade] = useState(false);
   const [upgradePreviewError, setUpgradePreviewError] = useState<string | null>(null);
@@ -126,8 +130,13 @@ export function SiteMembershipPage({
       : content.signedOutBody;
   const paymentPlan = planMap.get(activeOrder?.planId || selectedPlanId || "");
   const paymentPlanValue = paymentPlan ? localizedPlanName(paymentPlan, locale) : content.awaitingPayment;
-  const upgradePlan = upgradeQuote ? planMap.get(upgradeQuote.targetPlanId) ?? null : null;
-  const upgradePlanName = upgradePlan ? localizedPlanName(upgradePlan, locale) : upgradeQuote?.targetName || paymentPlanValue;
+  const upgradePlanName = resolveMembershipUpgradeTargetName(
+    plans,
+    upgradeTargetPlanId,
+    upgradeQuote?.targetName,
+    locale,
+    content.awaitingPayment,
+  );
   const paymentPointsValue = paymentPlan
     ? paymentPlan.maxAgents === null
       ? content.unlimitedAgentsValue
@@ -150,11 +159,11 @@ export function SiteMembershipPage({
   const autoCheckoutPlanAlreadyActive = Boolean(
     signedIn &&
       autoCheckoutPlan &&
-      membershipStatus?.active &&
-      membershipStatus.tier.toLowerCase() === autoCheckoutPlan.tier.toLowerCase(),
+      isMembershipPlanCurrent(membershipStatus, autoCheckoutPlan),
   );
 
   async function createOrder(planId: string, quoteId?: string) {
+    clearUpgradeState();
     setSelectedPlanId(planId);
     setActiveOrder(null);
     setPaymentModalOpen(true);
@@ -192,6 +201,7 @@ export function SiteMembershipPage({
 
   async function previewUpgrade(planId: string) {
     setSelectedPlanId(planId);
+    setUpgradeTargetPlanId(planId);
     setUpgradeQuote(null);
     setUpgradePreviewError(null);
     setPreviewingUpgrade(true);
@@ -204,8 +214,8 @@ export function SiteMembershipPage({
       })) as ApiResult;
       const quote = normalizeMembershipUpgradeQuote(payload.quote);
       if (!quote) throw new Error("membership_upgrade_preview_invalid");
+      if (quote.targetPlanId !== planId) throw new Error("membership_upgrade_preview_invalid");
       if (quote.kind !== "upgrade") {
-        setUpgradeModalOpen(false);
         await createOrder(planId);
         return;
       }
@@ -221,22 +231,26 @@ export function SiteMembershipPage({
   function beginCheckout(planId: string, pendingOrder: SitePointRechargeOrder | null) {
     setSelectedPlanId(planId);
     if (pendingOrder) {
+      clearUpgradeState();
       setActiveOrder(pendingOrder);
       setPaymentNotice(null);
       setPaymentModalOpen(true);
       return;
     }
     const targetPlan = planMap.get(planId);
-    const isPlusToProUpgrade = Boolean(
-      membershipStatus?.active &&
-      membershipStatus.tier.toLowerCase() === "plus" &&
-      targetPlan?.tier.toLowerCase() === "pro",
-    );
-    if (isPlusToProUpgrade) {
+    if (shouldPreviewMembershipUpgrade(membershipStatus, targetPlan)) {
       void previewUpgrade(planId);
       return;
     }
     void createOrder(planId);
+  }
+
+  function clearUpgradeState() {
+    setUpgradeModalOpen(false);
+    setUpgradeTargetPlanId(null);
+    setUpgradeQuote(null);
+    setUpgradePreviewError(null);
+    setPreviewingUpgrade(false);
   }
 
   async function refreshOrder(order: SitePointRechargeOrder, options?: { showPendingNotice?: boolean }) {
@@ -311,7 +325,7 @@ export function SiteMembershipPage({
     }
 
     const targetPlan = planMap.get(autoCheckoutPlanId);
-    if (membershipStatus?.active && membershipStatus.tier.toLowerCase() === "plus" && targetPlan?.tier.toLowerCase() === "pro") {
+    if (shouldPreviewMembershipUpgrade(membershipStatus, targetPlan)) {
       void previewUpgrade(autoCheckoutPlanId);
     } else {
       void createOrder(autoCheckoutPlanId);
@@ -416,7 +430,7 @@ export function SiteMembershipPage({
                   const highlighted = plan.planId === selectedPlanId;
                   const pendingOrder = findPendingOrderForPlan(orders, plan.planId);
                   const displayHighlights = displayPlanHighlights(plan, locale);
-                  const isCurrentPlan = Boolean(membershipStatus?.active && membershipStatus.tier === plan.tier);
+                  const isCurrentPlan = isMembershipPlanCurrent(membershipStatus, plan);
                   return (
                     <article
                       key={plan.planId}
@@ -508,11 +522,11 @@ export function SiteMembershipPage({
         <ModalShell
           title={template(content.upgradeTitle, { plan: upgradePlanName })}
           heading={template(content.upgradeTitle, { plan: upgradePlanName })}
-          description={content.upgradeSubtitle}
+          description={upgradeQuote?.creditStatus === "unavailable" ? content.upgradeSubtitleUnavailable : content.upgradeSubtitle}
           variant="upgrade"
           onClose={() => {
             if (creating) return;
-            setUpgradeModalOpen(false);
+            clearUpgradeState();
           }}
         >
           {previewingUpgrade ? (
@@ -527,11 +541,20 @@ export function SiteMembershipPage({
                   <span>{template(content.upgradeListPrice, { plan: upgradePlanName })}</span>
                   <strong>{formatMoney(upgradeQuote.listAmountCents)}</strong>
                 </div>
-                <div className="billing-upgrade-line">
-                  <span>{template(content.upgradeCredit, { days: formatRemainingDays(upgradeQuote.currentMembership?.remainingDays) })}</span>
-                  <strong>-{formatMoney(upgradeQuote.creditAmountCents)}</strong>
-                </div>
+                {upgradeQuote.creditStatus === "unavailable" ? null : (
+                  <div className="billing-upgrade-line">
+                    <span>{template(content.upgradeCredit, { days: formatRemainingDays(upgradeQuote.currentMembership?.remainingDays) })}</span>
+                    <strong>-{formatMoney(upgradeQuote.creditAmountCents)}</strong>
+                  </div>
+                )}
               </div>
+
+              {upgradeQuote.creditStatus === "unavailable" ? (
+                <div className="billing-upgrade-credit-unavailable">
+                  <Info size={19} weight="regular" aria-hidden="true" />
+                  <span>{content.upgradeCreditUnavailable}</span>
+                </div>
+              ) : null}
 
               <div className="billing-upgrade-total">
                 <span>{content.upgradeTotal}</span>
@@ -555,13 +578,12 @@ export function SiteMembershipPage({
                 className="billing-upgrade-confirm"
                 disabled={creating}
                 onClick={() => {
-                  setUpgradeModalOpen(false);
                   void createOrder(upgradeQuote.targetPlanId, upgradeQuote.quoteId);
                 }}
               >
                 {creating ? content.creatingOrder : template(content.upgradeConfirm, { amount: formatMoney(upgradeQuote.payableAmountCents) })}
               </button>
-              <button type="button" className="billing-upgrade-cancel" disabled={creating} onClick={() => setUpgradeModalOpen(false)}>
+              <button type="button" className="billing-upgrade-cancel" disabled={creating} onClick={clearUpgradeState}>
                 {content.upgradeCancel}
               </button>
             </div>
@@ -569,7 +591,15 @@ export function SiteMembershipPage({
             <div className="billing-upgrade-error" role="alert">
               <WarningCircle size={24} weight="regular" aria-hidden="true" />
               <p>{upgradePreviewError || content.errors.site_billing_http_502}</p>
-              <button type="button" onClick={() => void previewUpgrade(selectedPlanId)}>{content.upgradePreviewRetry}</button>
+              <button
+                type="button"
+                disabled={!upgradeTargetPlanId}
+                onClick={() => {
+                  if (upgradeTargetPlanId) void previewUpgrade(upgradeTargetPlanId);
+                }}
+              >
+                {content.upgradePreviewRetry}
+              </button>
             </div>
           )}
         </ModalShell>

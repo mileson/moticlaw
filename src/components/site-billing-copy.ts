@@ -46,8 +46,10 @@ export type SiteBillingCopy = {
   creatingOrder: string;
   upgradeTitle: string;
   upgradeSubtitle: string;
+  upgradeSubtitleUnavailable: string;
   upgradeListPrice: string;
   upgradeCredit: string;
+  upgradeCreditUnavailable: string;
   upgradeTotal: string;
   upgradeEffective: string;
   upgradeEndsCurrent: string;
@@ -145,8 +147,10 @@ export const siteBillingCopy: Record<"en" | "zh", SiteBillingCopy> = {
     creatingOrder: "Creating order...",
     upgradeTitle: "Confirm upgrade to {plan}",
     upgradeSubtitle: "Your remaining Plus value is applied automatically · upgrade right after payment",
+    upgradeSubtitleUnavailable: "This upgrade uses the regular Pro price and activates right after payment",
     upgradeListPrice: "{plan}",
     upgradeCredit: "Plus · {days} days remaining",
+    upgradeCreditUnavailable: "Your current Plus plan has no paid amount available to credit, so this upgrade uses the regular Pro price · it activates right after payment",
     upgradeTotal: "Pay now",
     upgradeEffective: "Active right after payment · estimated valid until {date}",
     upgradeEndsCurrent: "Your current Plus plan ends after the upgrade succeeds",
@@ -274,8 +278,10 @@ export const siteBillingCopy: Record<"en" | "zh", SiteBillingCopy> = {
     creatingOrder: "正在创建订单...",
     upgradeTitle: "确认升级到 {plan}",
     upgradeSubtitle: "Plus 剩余价值将自动抵扣，支付成功后立即升级",
+    upgradeSubtitleUnavailable: "本次按 Pro 原价升级，支付成功后立即生效",
     upgradeListPrice: "{plan}",
     upgradeCredit: "Plus 剩余 {days} 天抵扣",
+    upgradeCreditUnavailable: "当前 Plus 没有可抵扣的已支付金额，本次按 Pro 原价升级；支付成功后立即生效",
     upgradeTotal: "本次支付",
     upgradeEffective: "支付成功后立即生效 · 预计有效期至 {date}",
     upgradeEndsCurrent: "原 Plus 套餐将在升级成功后结束",

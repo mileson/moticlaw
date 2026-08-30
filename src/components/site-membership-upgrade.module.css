@@ -115,6 +115,7 @@
 }
 
 :global(.billing-upgrade-effective),
+:global(.billing-upgrade-credit-unavailable),
 :global(.billing-upgrade-note) {
   display: flex;
   align-items: flex-start;
@@ -130,7 +131,21 @@
   background: #f8f9fa;
 }
 
+:global(.billing-upgrade-credit-unavailable) {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  border: 1px solid #e2e5ea;
+  border-radius: 0.8rem;
+  padding: 0.9rem 1rem;
+  background: #f8f9fa;
+  color: #4f5b70;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
 :global(.billing-upgrade-effective svg),
+:global(.billing-upgrade-credit-unavailable svg),
 :global(.billing-upgrade-note svg) {
   flex: 0 0 auto;
   margin-top: 0.05rem;
