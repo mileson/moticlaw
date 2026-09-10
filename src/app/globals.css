@@ -2015,6 +2015,12 @@ html.dark .billing-plan-card-featured {
   gap: 0.9rem;
 }
 
+.billing-plan-card-actions {
+  display: grid;
+  width: 100%;
+  gap: 0.7rem;
+}
+
 .billing-plan-card-price-block {
   display: grid;
   gap: 0.28rem;
@@ -2646,6 +2652,201 @@ html.dark .billing-plan-card-action:hover {
   border-color: #d5d5d5;
   background: #d5d5d5;
   color: rgba(255, 255, 255, 0.92);
+}
+
+.billing-membership-panel .billing-plan-card-action-sandbox {
+  border-style: dashed;
+  border-color: #c9ced8;
+  background: #f6f7f9;
+  color: #344054;
+  font-size: 0.9rem;
+}
+
+.billing-membership-panel .billing-plan-card-action-sandbox:hover {
+  border-color: #aab2c0;
+  background: #eef1f4;
+  color: #162033;
+}
+
+.billing-watcha-sandbox-loading,
+.billing-watcha-sandbox-state {
+  display: grid;
+  justify-items: center;
+  gap: 0.85rem;
+  width: min(100%, 24rem);
+  margin: 0 auto;
+  color: #475467;
+  text-align: center;
+}
+
+.billing-watcha-sandbox-loading svg {
+  animation: billingDetailSkeletonShimmer 1.35s ease-in-out infinite;
+}
+
+.billing-watcha-sandbox-state strong {
+  color: #182033;
+  font-size: 1.15rem;
+}
+
+.billing-watcha-sandbox-state p {
+  margin: 0;
+  color: #667085;
+  line-height: 1.65;
+}
+
+.billing-watcha-sandbox-state-granted svg {
+  color: #3d9a4e;
+}
+
+.billing-watcha-sandbox-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  width: 100%;
+  border: 1px dashed #d4a84f;
+  border-radius: 0.9rem;
+  background: #fff9e9;
+  color: #7b5711;
+  padding: 0.75rem 0.9rem;
+  text-align: left;
+}
+
+.billing-watcha-quota-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 18px;
+  border: 1px dashed #cdd3dc;
+  border-radius: 20px;
+  background: #f7f8fa;
+  color: #475467;
+  padding: 18px 20px;
+}
+
+.billing-watcha-quota-entry > div {
+  display: grid;
+  gap: 7px;
+  max-width: 720px;
+}
+
+.billing-watcha-quota-entry strong {
+  color: #182033;
+  font-size: 1rem;
+}
+
+.billing-watcha-quota-entry p,
+.billing-watcha-quota-packages-head p,
+.billing-watcha-quota-balance p {
+  margin: 0;
+  color: #667085;
+  line-height: 1.6;
+}
+
+.billing-watcha-quota-kicker {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 7px;
+  color: #7b5711;
+  font-size: 0.78rem;
+  font-weight: 720;
+  letter-spacing: 0.02em;
+}
+
+.billing-membership-panel .billing-watcha-quota-entry-action {
+  width: auto;
+  flex: 0 0 auto;
+  justify-content: center;
+}
+
+.billing-watcha-quota-balance {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #e4e7ec;
+  border-radius: 18px;
+  background: #ffffff;
+  padding: 18px;
+}
+
+.billing-watcha-quota-balance > span {
+  color: #667085;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.billing-watcha-quota-balance > strong {
+  color: #182033;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  line-height: 1;
+}
+
+.billing-watcha-quota-packages,
+.billing-watcha-quota-packages-head {
+  display: grid;
+  gap: 12px;
+}
+
+.billing-watcha-quota-packages-head > strong {
+  color: #182033;
+  font-size: 1rem;
+}
+
+.billing-watcha-quota-package-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.billing-watcha-quota-package {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  border: 1px solid #e4e7ec;
+  border-radius: 16px;
+  background: #ffffff;
+  padding: 16px;
+}
+
+.billing-watcha-quota-package > strong {
+  color: #182033;
+}
+
+.billing-watcha-quota-package > span {
+  color: #667085;
+  font-size: 0.88rem;
+}
+
+.billing-watcha-quota-package > b {
+  color: #182033;
+  font-size: 1.45rem;
+  line-height: 1.1;
+}
+
+.billing-watcha-quota-package > a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+  border: 1px solid #c9ced8;
+  border-radius: 12px;
+  background: #f6f7f9;
+  color: #344054;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.68rem 0.75rem;
+  text-align: center;
+}
+
+.billing-watcha-quota-package > a:hover {
+  border-color: #aab2c0;
+  background: #eef1f4;
+  color: #162033;
+}
+
+.billing-watcha-quota-separation-note {
+  margin-top: 0;
 }
 
 .billing-membership-orders-surface {
@@ -4064,6 +4265,20 @@ html.dark .billing-payment-refresh-subtle:hover {
   .billing-plan-table-row,
   .billing-drawer-body,
   .billing-record-row {
+    grid-template-columns: 1fr;
+  }
+
+  .billing-watcha-quota-entry {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .billing-membership-panel .billing-watcha-quota-entry-action,
+  .billing-watcha-quota-package-grid {
+    width: 100%;
+  }
+
+  .billing-watcha-quota-package-grid {
     grid-template-columns: 1fr;
   }
 

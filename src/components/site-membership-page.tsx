@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowClockwise, CheckCircle, Crown, Info, Lightning, Receipt, Sparkle, WarningCircle } from "@phosphor-icons/react";
+import { ArrowClockwise, CheckCircle, Crown, CreditCard, Info, Lightning, Receipt, Sparkle, WarningCircle } from "@phosphor-icons/react";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -38,6 +38,10 @@ import {
   type SiteMembershipUpgradeQuote,
   type SitePointRechargeOrder,
 } from "@/lib/site-billing";
+import {
+  normalizeSiteWatchaPayAccess,
+  type SiteWatchaPayAccess,
+} from "@/lib/site-watcha-pay";
 
 type ApiResult = {
   ok?: boolean;
@@ -63,6 +67,8 @@ export function SiteMembershipPage({
   initialCatalog,
   initialOrders,
   initialMembershipStatus,
+  watchaPayConfigured,
+  watchaReturnPlanId,
   unavailable,
 }: {
   locale: Locale;
@@ -74,6 +80,8 @@ export function SiteMembershipPage({
   initialCatalog: SiteBillingCatalog;
   initialOrders: SitePointRechargeOrder[];
   initialMembershipStatus: SiteMembershipStatus | null;
+  watchaPayConfigured: boolean;
+  watchaReturnPlanId: string | null;
   unavailable: boolean;
 }) {
   const content = siteBillingCopy[locale];
@@ -105,9 +113,15 @@ export function SiteMembershipPage({
   const [upgradeQuote, setUpgradeQuote] = useState<SiteMembershipUpgradeQuote | null>(null);
   const [previewingUpgrade, setPreviewingUpgrade] = useState(false);
   const [upgradePreviewError, setUpgradePreviewError] = useState<string | null>(null);
+  const [watchaPayOpen, setWatchaPayOpen] = useState(false);
+  const [watchaPayPlanId, setWatchaPayPlanId] = useState<string | null>(null);
+  const [watchaPayAccess, setWatchaPayAccess] = useState<SiteWatchaPayAccess | null>(null);
+  const [watchaPayCheckingPlanId, setWatchaPayCheckingPlanId] = useState<string | null>(null);
+  const [watchaPayError, setWatchaPayError] = useState<string | null>(null);
   const [message, setMessage] = useState<{ kind: "success" | "error" | "info"; title: string; body?: string } | null>(null);
   const [paymentNotice, setPaymentNotice] = useState<PaymentNotice | null>(null);
   const autoCheckoutAttemptRef = useRef<string | null>(null);
+  const watchaReturnAttemptRef = useRef<string | null>(null);
 
   const plans = catalog.plans;
   const planMap = useMemo(() => new Map(plans.map((plan) => [plan.planId, plan])), [plans]);
@@ -129,6 +143,7 @@ export function SiteMembershipPage({
       ? ""
       : content.signedOutBody;
   const paymentPlan = planMap.get(activeOrder?.planId || selectedPlanId || "");
+  const watchaPayPlan = watchaPayPlanId ? planMap.get(watchaPayPlanId) ?? null : null;
   const paymentPlanValue = paymentPlan ? localizedPlanName(paymentPlan, locale) : content.awaitingPayment;
   const upgradePlanName = resolveMembershipUpgradeTargetName(
     plans,
@@ -196,6 +211,38 @@ export function SiteMembershipPage({
       setMessage({ kind: "error", title: resolved.message });
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function checkWatchaPay(planId: string, refresh = false) {
+    setSelectedPlanId(planId);
+    setWatchaPayPlanId(planId);
+    setWatchaPayAccess(null);
+    setWatchaPayError(null);
+    setWatchaPayCheckingPlanId(planId);
+    setWatchaPayOpen(true);
+    setMessage(null);
+    try {
+      const payload = await requestBilling("/api/billing/membership/watcha-pay/access", {
+        method: "POST",
+        body: { planId, locale, refresh },
+      });
+      const access = normalizeSiteWatchaPayAccess(payload);
+      if (!access) throw new Error("watcha_pay_response_invalid");
+      setWatchaPayAccess(access);
+      if (access.access === "granted") {
+        await Promise.all([refreshMembershipStatus(), refreshOrders({ quiet: true })]);
+        setMessage({
+          kind: "success",
+          title: content.watchaPayGrantedTitle,
+          body: content.watchaPayGrantedBody,
+        });
+      }
+    } catch (error) {
+      const resolved = resolveBillingError(error, content.errors);
+      setWatchaPayError(resolved.message);
+    } finally {
+      setWatchaPayCheckingPlanId(null);
     }
   }
 
@@ -314,25 +361,23 @@ export function SiteMembershipPage({
     if (autoCheckoutPlanAlreadyActive) return;
     if (autoCheckoutAttemptRef.current === autoCheckoutPlanId) return;
 
-    const pendingOrder = findPendingOrderForPlan(orders, autoCheckoutPlanId);
     autoCheckoutAttemptRef.current = autoCheckoutPlanId;
     setSelectedPlanId(autoCheckoutPlanId);
     setPaymentNotice(null);
-    if (pendingOrder) {
-      setActiveOrder(pendingOrder);
-      setPaymentModalOpen(true);
-      return;
-    }
-
-    const targetPlan = planMap.get(autoCheckoutPlanId);
-    if (shouldPreviewMembershipUpgrade(membershipStatus, targetPlan)) {
-      void previewUpgrade(autoCheckoutPlanId);
-    } else {
-      void createOrder(autoCheckoutPlanId);
-    }
+    if (watchaPayConfigured) void checkWatchaPay(autoCheckoutPlanId);
     // The deep link should fire only once for the server-resolved initial target.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoCheckoutPlanId, signedIn, unavailable, autoCheckoutPlanAlreadyActive]);
+  }, [autoCheckoutPlanId, signedIn, unavailable, autoCheckoutPlanAlreadyActive, watchaPayConfigured]);
+
+  useEffect(() => {
+    if (!signedIn || !watchaPayConfigured || !watchaReturnPlanId || unavailable) return;
+    if (!planMap.has(watchaReturnPlanId)) return;
+    if (watchaReturnAttemptRef.current === watchaReturnPlanId) return;
+    watchaReturnAttemptRef.current = watchaReturnPlanId;
+    void checkWatchaPay(watchaReturnPlanId, true);
+    // A Watcha return only rechecks the server-owned entitlement once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signedIn, unavailable, watchaPayConfigured, watchaReturnPlanId]);
 
   useEffect(() => {
     if (!paymentModalOpen || !readyPaymentOrder || !isPaymentWaiting(readyPaymentOrder)) return;
@@ -429,7 +474,6 @@ export function SiteMembershipPage({
               <div className={`billing-plan-card-grid ${styles.planGrid}`}>
                 {plans.map((plan) => {
                   const highlighted = plan.planId === selectedPlanId;
-                  const pendingOrder = findPendingOrderForPlan(orders, plan.planId);
                   const displayHighlights = displayPlanHighlights(plan, locale);
                   const isCurrentPlan = isMembershipPlanCurrent(membershipStatus, plan);
                   return (
@@ -463,26 +507,29 @@ export function SiteMembershipPage({
                       </div>
 
                       <div className="billing-plan-card-foot">
-                        {signedIn ? (
-                          <button
-                            type="button"
-                            className="billing-plan-card-action billing-plan-card-action-primary"
-                            disabled={creating}
-                            onClick={() => beginCheckout(plan.planId, pendingOrder)}
-                          >
-                            {creating && selectedPlanId === plan.planId
-                              ? content.creatingOrder
-                              : pendingOrder
-                                ? content.continuePayment
-                                : isCurrentPlan
-                                  ? content.renewLabel
-                                  : content.createOrder}
-                          </button>
-                        ) : (
-                          <Link href={loginHref} className="billing-plan-card-action billing-plan-card-action-primary" onClick={() => setSelectedPlanId(plan.planId)}>
-                            {content.signInToPurchase}
-                          </Link>
-                        )}
+                        <div className="billing-plan-card-actions">
+                          {signedIn ? (
+                            <button
+                              type="button"
+                              className="billing-plan-card-action billing-plan-card-action-primary"
+                              disabled={!watchaPayConfigured || Boolean(watchaPayCheckingPlanId)}
+                              onClick={() => void checkWatchaPay(plan.planId)}
+                            >
+                              <CreditCard size={17} weight="regular" aria-hidden="true" />
+                              {watchaPayCheckingPlanId === plan.planId
+                                ? content.watchaPayChecking
+                                : watchaPayConfigured
+                                  ? isCurrentPlan
+                                    ? content.renewLabel
+                                    : content.watchaPayAction
+                                  : content.watchaPayUnavailableTitle}
+                            </button>
+                          ) : (
+                            <Link href={loginHref} className="billing-plan-card-action billing-plan-card-action-primary" onClick={() => setSelectedPlanId(plan.planId)}>
+                              {content.signInToPurchase}
+                            </Link>
+                          )}
+                        </div>
                       </div>
                     </article>
                   );
@@ -700,6 +747,83 @@ export function SiteMembershipPage({
             </div>
           ) : (
             <RecordEmpty title={content.scanUnavailable} icon={<WarningCircle size={40} weight="regular" aria-hidden="true" />} />
+          )}
+        </ModalShell>
+      ) : null}
+
+      {watchaPayOpen && watchaPayPlan ? (
+        <ModalShell
+          title={content.watchaPayTitle}
+          heading={content.watchaPayTitle}
+          description={content.watchaPayDescription}
+          onClose={() => setWatchaPayOpen(false)}
+        >
+          {watchaPayCheckingPlanId ? (
+            <div className="billing-watcha-sandbox-loading" role="status" aria-live="polite">
+              <ArrowClockwise size={22} weight="regular" aria-hidden="true" />
+              <span>{content.watchaPayChecking}</span>
+            </div>
+          ) : watchaPayError ? (
+            <div className="billing-watcha-sandbox-state" role="alert">
+              <WarningCircle size={34} weight="regular" aria-hidden="true" />
+              <strong>{content.watchaPayUnavailableTitle}</strong>
+              <p>{watchaPayError}</p>
+              <button type="button" className="billing-payment-confirm-button" onClick={() => void checkWatchaPay(watchaPayPlan.planId, true)}>
+                {content.watchaPayRecheck}
+              </button>
+            </div>
+          ) : watchaPayAccess?.access === "granted" ? (
+            <div className="billing-watcha-sandbox-state billing-watcha-sandbox-state-granted">
+              <CheckCircle size={48} weight="fill" aria-hidden="true" />
+              <strong>{content.watchaPayGrantedTitle}</strong>
+              <p>{content.watchaPayGrantedBody}</p>
+              <button type="button" className="billing-payment-confirm-button billing-payment-confirm-button-done" onClick={() => setWatchaPayOpen(false)}>
+                {content.watchaPayClose}
+              </button>
+            </div>
+          ) : watchaPayAccess?.access === "purchase_required" ? (
+            <div className="billing-payment-sheet">
+              <div className="billing-watcha-sandbox-banner">
+                <CreditCard size={20} weight="regular" aria-hidden="true" />
+                <strong>{content.watchaPayLivePaymentNotice}</strong>
+              </div>
+              {watchaPayAccess.purchaseUrl ? (
+                <div className="billing-payment-qr-card">
+                  <div className="billing-payment-qr">
+                    <QRCodeSVG value={watchaPayAccess.purchaseUrl} size={176} marginSize={2} level="M" />
+                  </div>
+                  <div className="billing-payment-qr-meta">
+                    <strong className="billing-payment-plan-inline">{localizedPlanName(watchaPayPlan, locale)}</strong>
+                    <span className="billing-subtle">{content.watchaPayChooseTier}</span>
+                  </div>
+                </div>
+              ) : null}
+              <a
+                className="billing-payment-confirm-button"
+                href={watchaPayAccess.purchaseUrl || watchaPayAccess.qrCodeUrl || undefined}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {content.watchaPayOpenPurchase}
+              </a>
+              <button
+                type="button"
+                className="billing-payment-refresh-subtle"
+                onClick={() => void checkWatchaPay(watchaPayPlan.planId, true)}
+              >
+                {content.watchaPayRecheck}
+              </button>
+              <p className="billing-payment-hint">{content.watchaPayChooseTier}</p>
+            </div>
+          ) : (
+            <div className="billing-watcha-sandbox-state">
+              <WarningCircle size={34} weight="regular" aria-hidden="true" />
+              <strong>{content.watchaPayUnavailableTitle}</strong>
+              <p>{content.watchaPayUnavailableBody}</p>
+              <button type="button" className="billing-payment-confirm-button" onClick={() => void checkWatchaPay(watchaPayPlan.planId, true)}>
+                {content.watchaPayRecheck}
+              </button>
+            </div>
           )}
         </ModalShell>
       ) : null}

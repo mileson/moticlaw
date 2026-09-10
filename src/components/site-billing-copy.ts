@@ -44,6 +44,19 @@ export type SiteBillingCopy = {
   createOrder: string;
   continuePayment: string;
   creatingOrder: string;
+  watchaPayAction: string;
+  watchaPayChecking: string;
+  watchaPayTitle: string;
+  watchaPayDescription: string;
+  watchaPayLivePaymentNotice: string;
+  watchaPayChooseTier: string;
+  watchaPayOpenPurchase: string;
+  watchaPayRecheck: string;
+  watchaPayGrantedTitle: string;
+  watchaPayGrantedBody: string;
+  watchaPayUnavailableTitle: string;
+  watchaPayUnavailableBody: string;
+  watchaPayClose: string;
   upgradeTitle: string;
   upgradeSubtitle: string;
   upgradeSubtitleUnavailable: string;
@@ -145,6 +158,19 @@ export const siteBillingCopy: Record<"en" | "zh", SiteBillingCopy> = {
     createOrder: "Activate now",
     continuePayment: "Continue payment",
     creatingOrder: "Creating order...",
+    watchaPayAction: "Buy with Watcha Pay",
+    watchaPayChecking: "Preparing secure checkout...",
+    watchaPayTitle: "Confirm membership purchase",
+    watchaPayDescription: "Choose the billing period on the secure payment page. Your membership activates after payment is confirmed.",
+    watchaPayLivePaymentNotice: "Live payment · your account will be charged after confirmation",
+    watchaPayChooseTier: "Confirm monthly or annual billing and the final amount on the payment page.",
+    watchaPayOpenPurchase: "Continue to payment",
+    watchaPayRecheck: "Check entitlement again",
+    watchaPayGrantedTitle: "Payment confirmed",
+    watchaPayGrantedBody: "Your membership entitlement has been confirmed. Refresh the account page if the new plan is not shown yet.",
+    watchaPayUnavailableTitle: "Payment is temporarily unavailable",
+    watchaPayUnavailableBody: "No purchase was created. Close this window and try again later.",
+    watchaPayClose: "Close",
     upgradeTitle: "Confirm upgrade to {plan}",
     upgradeSubtitle: "Your remaining Plus value is applied automatically · upgrade right after payment",
     upgradeSubtitleUnavailable: "This upgrade uses the regular Pro price and activates right after payment",
@@ -226,6 +252,13 @@ export const siteBillingCopy: Record<"en" | "zh", SiteBillingCopy> = {
       membership_upgrade_requires_support: "This upgrade needs help from support · your current plan remains unchanged",
       membership_upgrade_source_missing: "We couldn't verify the remaining value of your current plan · contact support before upgrading",
       membership_upgrade_preview_invalid: "We couldn't calculate this upgrade right now · try again shortly",
+      watcha_pay_not_configured: "Watcha Pay is not available right now.",
+      watcha_pay_plan_invalid: "This plan is not available through Watcha Pay.",
+      watcha_pay_user_invalid: "This account cannot be checked right now. Sign in again and retry.",
+      watcha_pay_return_url_invalid: "The payment return path is unavailable. Refresh and retry.",
+      watcha_pay_request_failed: "Watcha Pay cannot be reached right now. Try again shortly.",
+      watcha_pay_request_rejected: "Watcha Pay did not accept this request. Try again later.",
+      watcha_pay_response_invalid: "Watcha Pay returned an incomplete result. Try again later.",
       point_ledger_kind_invalid: "Choose a valid points record filter.",
       site_billing_http_502: "The recharge service is temporarily unavailable. Please try again shortly.",
     },
@@ -276,6 +309,19 @@ export const siteBillingCopy: Record<"en" | "zh", SiteBillingCopy> = {
     createOrder: "立即开通",
     continuePayment: "继续支付",
     creatingOrder: "正在创建订单...",
+    watchaPayAction: "使用观猹 Pay 购买",
+    watchaPayChecking: "正在准备安全支付...",
+    watchaPayTitle: "确认购买会员",
+    watchaPayDescription: "请在安全支付页选择付费周期。付款确认后，会员权益会自动生效。",
+    watchaPayLivePaymentNotice: "正式支付 · 确认后将产生真实扣款",
+    watchaPayChooseTier: "请在支付页确认月付或年付，以及最终支付金额。",
+    watchaPayOpenPurchase: "前往支付",
+    watchaPayRecheck: "重新检查权益",
+    watchaPayGrantedTitle: "付款已确认",
+    watchaPayGrantedBody: "会员权益已经确认。如页面暂未显示新套餐，请刷新账号页面。",
+    watchaPayUnavailableTitle: "支付暂不可用",
+    watchaPayUnavailableBody: "这次没有创建购买，请关闭后稍后再试。",
+    watchaPayClose: "关闭",
     upgradeTitle: "确认升级到 {plan}",
     upgradeSubtitle: "Plus 剩余价值将自动抵扣，支付成功后立即升级",
     upgradeSubtitleUnavailable: "本次按 Pro 原价升级，支付成功后立即生效",
@@ -357,6 +403,13 @@ export const siteBillingCopy: Record<"en" | "zh", SiteBillingCopy> = {
       membership_upgrade_requires_support: "这次升级需要客服协助，当前套餐不会受到影响",
       membership_upgrade_source_missing: "暂时无法核对当前套餐的剩余价值，请联系客服后再升级",
       membership_upgrade_preview_invalid: "暂时无法计算这次升级价格，请稍后再试",
+      watcha_pay_not_configured: "观猹 Pay 当前暂不可用。",
+      watcha_pay_plan_invalid: "这个套餐暂不支持使用观猹 Pay 购买。",
+      watcha_pay_user_invalid: "暂时无法检查这个测试账号，请重新登录后再试。",
+      watcha_pay_return_url_invalid: "支付回跳地址暂不可用，请刷新后重试。",
+      watcha_pay_request_failed: "暂时无法连接观猹 Pay，请稍后再试。",
+      watcha_pay_request_rejected: "观猹 Pay 没有接受这次请求，请稍后再试。",
+      watcha_pay_response_invalid: "观猹 Pay 返回的信息不完整，请稍后再试。",
       point_ledger_kind_invalid: "请选择有效的积分记录类型。",
       site_billing_http_502: "充值服务暂时不可用，请稍后再试。",
     },

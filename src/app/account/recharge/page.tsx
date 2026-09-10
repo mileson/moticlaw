@@ -4,6 +4,7 @@ import { SitePointsPage } from "@/components/site-points-page";
 import { detectLocale } from "@/lib/locale";
 import { readSiteAuthSession } from "@/lib/site-auth";
 import { readSitePointsInitialData } from "@/lib/site-billing-server";
+import { isWatchaPayConfigured } from "@/lib/site-watcha-pay-server";
 
 export async function generateMetadata({
   searchParams,
@@ -19,8 +20,8 @@ export async function generateMetadata({
   const title = locale === "zh" ? "积分充值 - MotiClaw" : "Points Recharge - MotiClaw";
   const description =
     locale === "zh"
-      ? "查看当前积分余额，选择积分包并使用微信扫码完成充值。"
-      : "Review your points balance, choose a points package, and complete recharge with WeChat.";
+      ? "查看当前积分余额，选择积分包并通过安全支付页完成充值。"
+      : "Review your points balance, choose a package, and complete recharge on the secure payment page.";
   const canonical = locale === "zh" ? "/zh/account/recharge" : "/account/recharge";
   return {
     title,
@@ -66,6 +67,10 @@ export default async function RechargePage({
       initialAccount={billingData.account}
       initialLedgerEntries={billingData.ledgerEntries}
       initialOrders={billingData.orders}
+      watchaPayConfigured={isWatchaPayConfigured()}
+      watchaReturnPlanId={firstString(rawSearchParams.watcha_return) === "1"
+        ? firstString(rawSearchParams.watcha_plan_id) ?? null
+        : null}
       unavailable={billingData.unavailable}
     />
   );

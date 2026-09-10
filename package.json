@@ -10,7 +10,7 @@
     "test:auth": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test tests/desktop-auth-handoff.test.mjs",
     "smoke": "eslint && next build && node smoke.mjs",
     "smoke:public": "node smoke.mjs --target https://www.moticlaw.com --public",
-    "site:test": "node --test scripts/site/*.test.mjs",
+    "site:test": "node --test scripts/site/*.test.mjs tests/api/*.test.mjs",
     "automation:test": "node --test scripts/automation/*.test.mjs && cd tools/publishing-supervisor && go test ./...",
     "automation:supervisor:build": "cd tools/publishing-supervisor && go build ./...",
     "site:ship": "node scripts/site/ship-cycle.mjs",

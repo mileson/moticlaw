@@ -5,6 +5,7 @@ import { detectLocale } from "@/lib/locale";
 import { readSiteAuthSession } from "@/lib/site-auth";
 import { readSiteMembershipInitialData } from "@/lib/site-billing-server";
 import type { SiteBillingCatalog, SiteMembershipPlan } from "@/lib/site-billing";
+import { isWatchaPayConfigured } from "@/lib/site-watcha-pay-server";
 
 export async function generateMetadata({
   searchParams,
@@ -57,6 +58,9 @@ export default async function MembershipPage({
     firstString(rawSearchParams.tier),
     billingData.catalog,
   );
+  const watchaReturnPlan = firstString(rawSearchParams.watcha_return) === "1"
+    ? resolveCheckoutPlan(firstString(rawSearchParams.watcha_plan_id), undefined, billingData.catalog)
+    : null;
   const activeView = checkoutPlan ? "plans" : requestedView;
   const loginHref = withLoginReturnUrl(locale, withMembershipView(locale, "/account/membership", activeView, checkoutPlan));
 
@@ -71,6 +75,8 @@ export default async function MembershipPage({
       initialCatalog={billingData.catalog}
       initialOrders={billingData.orders}
       initialMembershipStatus={billingData.membershipStatus}
+      watchaPayConfigured={isWatchaPayConfigured()}
+      watchaReturnPlanId={watchaReturnPlan?.planId ?? null}
       unavailable={billingData.unavailable}
     />
   );

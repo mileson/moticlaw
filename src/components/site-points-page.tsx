@@ -4,6 +4,7 @@ import {
   ArrowClockwise,
   CheckCircle,
   Crown,
+  CreditCard,
   Lightning,
   ListChecks,
   Receipt,
@@ -12,7 +13,7 @@ import {
 } from "@phosphor-icons/react";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BillingShell,
   CopyOrderButton,
@@ -44,6 +45,11 @@ import {
   type SitePointsAccount,
   type SitePointsCatalog,
 } from "@/lib/site-billing";
+import {
+  normalizeSiteWatchaPayQuotaAccess,
+  watchaPayQuotaPackages,
+  type SiteWatchaPayQuotaAccess,
+} from "@/lib/site-watcha-pay";
 
 type ApiResult = {
   ok?: boolean;
@@ -63,6 +69,8 @@ export function SitePointsPage({
   initialAccount,
   initialLedgerEntries,
   initialOrders,
+  watchaPayConfigured,
+  watchaReturnPlanId,
   unavailable,
 }: {
   locale: Locale;
@@ -72,6 +80,8 @@ export function SitePointsPage({
   initialAccount: SitePointsAccount | null;
   initialLedgerEntries: SitePointLedgerEntry[];
   initialOrders: SitePointRechargeOrder[];
+  watchaPayConfigured: boolean;
+  watchaReturnPlanId: string | null;
   unavailable: boolean;
 }) {
   const content = sitePointsCopy[locale];
@@ -91,8 +101,13 @@ export function SitePointsPage({
   const [creating, setCreating] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [watchaQuotaOpen, setWatchaQuotaOpen] = useState(false);
+  const [watchaQuotaChecking, setWatchaQuotaChecking] = useState(false);
+  const [watchaQuotaAccess, setWatchaQuotaAccess] = useState<SiteWatchaPayQuotaAccess | null>(null);
+  const [watchaQuotaError, setWatchaQuotaError] = useState<string | null>(null);
   const [message, setMessage] = useState<PaymentNotice | null>(null);
   const [paymentNotice, setPaymentNotice] = useState<PaymentNotice | null>(null);
+  const watchaReturnAttemptRef = useRef(false);
 
   const plans = catalog.plans;
   const planMap = useMemo(() => new Map(plans.map((plan) => [plan.planId, plan])), [plans]);
@@ -123,6 +138,29 @@ export function SitePointsPage({
   const readyPaymentOrder = isReadyPaymentOrder(activeOrder) ? activeOrder : null;
   const paymentCompleted = activeOrder?.status === "paid";
   const paymentExpired = activeOrder ? ["closed", "failed", "expired"].includes(activeOrder.status) : false;
+
+  async function checkWatchaQuota(planId: string, refresh = false) {
+    setSelectedPlanId(planId);
+    setWatchaQuotaChecking(true);
+    setWatchaQuotaAccess(null);
+    setWatchaQuotaError(null);
+    setWatchaQuotaOpen(true);
+    try {
+      const payload = await requestBilling("/api/billing/points/watcha-pay/access", {
+        method: "POST",
+        body: { planId, locale, refresh },
+      });
+      const access = normalizeSiteWatchaPayQuotaAccess(payload);
+      if (!access) throw new Error("watcha_pay_response_invalid");
+      setWatchaQuotaAccess(access);
+      if (access.access === "granted") await refreshPointsData({ quiet: true });
+    } catch (error) {
+      const resolved = resolveBillingError(error, content.errors);
+      setWatchaQuotaError(resolved.message);
+    } finally {
+      setWatchaQuotaChecking(false);
+    }
+  }
 
   async function beginCheckout(planId: string) {
     setSelectedPlanId(planId);
@@ -268,6 +306,14 @@ export function SitePointsPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paymentModalOpen, activeOrder?.outTradeNo, activeOrder?.status]);
 
+  useEffect(() => {
+    if (!signedIn || !watchaPayConfigured || !watchaReturnPlanId || watchaReturnAttemptRef.current) return;
+    watchaReturnAttemptRef.current = true;
+    void checkWatchaQuota(watchaReturnPlanId, true);
+    // A Watcha return only rechecks the server-owned quota once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signedIn, watchaPayConfigured, watchaReturnPlanId]);
+
   return (
     <BillingShell
       homeLabel={content.home}
@@ -358,7 +404,6 @@ export function SitePointsPage({
               <div className="billing-plan-card-grid">
                 {plans.map((plan) => {
                   const selected = plan.planId === selectedPlanId;
-                  const pendingOrder = findPendingOrderForPlan(orders, plan.planId);
                   return (
                     <article
                       key={plan.planId}
@@ -385,14 +430,17 @@ export function SitePointsPage({
                           <button
                             type="button"
                             className="billing-plan-card-action billing-plan-card-action-primary"
-                            disabled={creating}
-                            onClick={() => void beginCheckout(plan.planId)}
+                            disabled={!watchaPayConfigured || watchaQuotaChecking}
+                            onClick={() => {
+                              void checkWatchaQuota(plan.planId);
+                            }}
                           >
-                            {creating && selectedPlanId === plan.planId
-                              ? content.creatingOrder
-                              : pendingOrder
-                                ? content.continuePayment
-                                : content.createOrder}
+                            <CreditCard size={17} weight="regular" aria-hidden="true" />
+                            {watchaQuotaChecking && selectedPlanId === plan.planId
+                              ? content.watchaQuotaChecking
+                              : watchaPayConfigured
+                                ? content.watchaQuotaAction
+                                : content.watchaQuotaUnavailableTitle}
                           </button>
                         ) : (
                           <Link
@@ -413,6 +461,7 @@ export function SitePointsPage({
                 <Sparkle size={18} weight="regular" aria-hidden="true" />
                 <p>{content.tipsBody}</p>
               </div>
+
             </>
           )}
         </section>
@@ -587,6 +636,92 @@ export function SitePointsPage({
               icon={<WarningCircle size={40} weight="regular" aria-hidden="true" />}
             />
           )}
+        </ModalShell>
+      ) : null}
+
+      {watchaQuotaOpen ? (
+        <ModalShell
+          title={content.watchaQuotaTitle}
+          heading={content.watchaQuotaTitle}
+          description={content.watchaQuotaSeparatedBalance}
+          onClose={() => setWatchaQuotaOpen(false)}
+        >
+          {watchaQuotaChecking ? (
+            <div className="billing-watcha-sandbox-loading" role="status" aria-live="polite">
+              <ArrowClockwise size={22} weight="regular" aria-hidden="true" />
+              <span>{content.watchaQuotaChecking}</span>
+            </div>
+          ) : watchaQuotaError ? (
+            <div className="billing-watcha-sandbox-state" role="alert">
+              <WarningCircle size={34} weight="regular" aria-hidden="true" />
+              <strong>{content.watchaQuotaUnavailableTitle}</strong>
+              <p>{watchaQuotaError}</p>
+              <button type="button" className="billing-payment-confirm-button" onClick={() => void checkWatchaQuota(watchaQuotaAccess?.planId || selectedPlanId || "", true)}>
+                {content.watchaQuotaRecheck}
+              </button>
+            </div>
+          ) : watchaQuotaAccess ? (
+            <div className="billing-payment-sheet">
+              <div className="billing-watcha-sandbox-banner">
+                <CreditCard size={20} weight="regular" aria-hidden="true" />
+                <strong>{content.watchaQuotaLivePaymentNotice}</strong>
+              </div>
+
+              <div className="billing-watcha-quota-balance" role="status" aria-live="polite">
+                <span>{content.watchaQuotaBalance}</span>
+                <strong>{formatInteger(watchaQuotaAccess.syncRemainingPoints ?? watchaQuotaAccess.remaining)} {content.points}</strong>
+                <p>
+                  {watchaQuotaAccess.access === "granted"
+                    ? content.watchaQuotaGrantedBody
+                    : watchaQuotaAccess.access === "purchase_required"
+                      ? content.watchaQuotaPurchaseRequiredBody
+                      : content.watchaQuotaUnavailableBody}
+                </p>
+              </div>
+
+              {watchaQuotaAccess.access !== "unavailable" ? (
+                <div className="billing-watcha-quota-packages">
+                  <div className="billing-watcha-quota-packages-head">
+                    <strong>{content.watchaQuotaPackagesTitle}</strong>
+                    <p>{content.watchaQuotaPackagesBody}</p>
+                  </div>
+                  <div className="billing-watcha-quota-package-grid">
+                    {watchaPayQuotaPackages.map((item) => {
+                      const name = item.id === "starter"
+                        ? content.watchaQuotaStarter
+                        : item.id === "advanced"
+                          ? content.watchaQuotaAdvanced
+                          : content.watchaQuotaTeam;
+                      const purchaseHref = watchaQuotaAccess.purchaseUrl || watchaQuotaAccess.qrCodeUrl || undefined;
+                      return (
+                        <article key={item.id} className="billing-watcha-quota-package">
+                          <strong>{name}</strong>
+                          <span>{formatInteger(item.points)} {content.points}</span>
+                          <b>{formatMoney(item.amountCents)}</b>
+                          <a
+                            href={purchaseHref}
+                            target="_blank"
+                            rel="noreferrer"
+                            aria-label={`${content.watchaQuotaOpenPackage}: ${name}, ${formatInteger(item.points)} ${content.points}, ${formatMoney(item.amountCents)}`}
+                          >
+                            {content.watchaQuotaOpenPackage}
+                          </a>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+
+              <div className="billing-membership-content-note billing-watcha-quota-separation-note">
+                <WarningCircle size={18} weight="regular" aria-hidden="true" />
+                <p>{content.watchaQuotaSeparatedBalance}</p>
+              </div>
+              <button type="button" className="billing-payment-refresh-subtle" onClick={() => void checkWatchaQuota(watchaQuotaAccess?.planId || selectedPlanId || "", true)}>
+                {content.watchaQuotaRecheck}
+              </button>
+            </div>
+          ) : null}
         </ModalShell>
       ) : null}
     </BillingShell>

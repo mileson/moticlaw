@@ -4,7 +4,7 @@ import { siteSessionCookieName, SiteAuthRequestError } from "@/lib/site-auth";
 type JsonRecord = Record<string, unknown>;
 
 export const billingResponseHeaders = {
-  "Cache-Control": "no-store",
+  "Cache-Control": "private, no-store",
 };
 
 export async function requireSiteSessionToken() {
