@@ -2,6 +2,9 @@ import type { MetadataRoute } from "next";
 import { getCanonicalPath, getIndexableSiteRoutes, getLanguageAlternates } from "@/components/seo-resource-manifest";
 import { blogPosts } from "@/lib/blog-posts";
 import { docPages } from "@/lib/docs-content";
+import { getPublishedDocsIndex } from "@/lib/site-content";
+
+export const dynamic = "force-dynamic";
 
 const siteUrl = "https://www.moticlaw.com";
 
@@ -19,9 +22,14 @@ function entries(path: string, lastModified: string, changeFrequency: "daily" | 
   }));
 }
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const publishedDocs = await getPublishedDocsIndex();
+  const publishedBySlug = new Map(publishedDocs.map((doc) => [doc.slug, doc]));
   const blogUpdatedAt = latestUpdatedAt(blogPosts.map((post) => post.updatedAt));
-  const docsUpdatedAt = latestUpdatedAt(docPages.map((doc) => doc.updatedAt));
+  const docsUpdatedAt = latestUpdatedAt([
+    ...docPages.map((doc) => publishedBySlug.get(doc.slug)?.updatedAt ?? doc.updatedAt),
+    ...publishedDocs.map((doc) => doc.updatedAt),
+  ]);
   const staticEntries = getIndexableSiteRoutes().flatMap((route) =>
     entries(
       route.path,
@@ -33,9 +41,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const blogEntries = blogPosts.flatMap((post) => entries(`/blog/${post.slug}`, post.updatedAt, "monthly", 0.7));
 
-  const docEntries = docPages
-    .filter((doc) => doc.slug !== "index")
-    .flatMap((doc) => entries(`/docs/${doc.slug}`, doc.updatedAt, "monthly", 0.68));
+  const docEntries = Array.from(
+    new Map(
+      [
+        ...docPages.filter((doc) => doc.slug !== "index").map((doc) => ({ slug: doc.slug, updatedAt: publishedBySlug.get(doc.slug)?.updatedAt ?? doc.updatedAt })),
+        ...publishedDocs.map((doc) => ({ slug: doc.slug, updatedAt: doc.updatedAt })),
+      ].map((doc) => [doc.slug, doc]),
+    ).values(),
+  ).flatMap((doc) => entries(`/docs/${doc.slug}`, doc.updatedAt, "monthly", 0.68));
 
   return [...staticEntries, ...blogEntries, ...docEntries];
 }

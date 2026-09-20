@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { Locale } from "@/lib/locale";
 import { getDocPage } from "@/lib/docs-content";
+import { getPublishedDoc } from "@/lib/site-content";
 import { DocsLayout } from "@/components/docs-layout";
 import { resolveSeoLocale, type SeoSearchParams } from "@/components/seo-resource-locale";
 import { getCanonicalPath, getLanguageAlternates, toAbsoluteSiteUrl } from "@/components/seo-resource-manifest";
@@ -18,7 +19,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = await resolveSeoLocale(searchParams);
-  const doc = slug === "index" ? undefined : getDocPage(slug);
+  const doc = slug === "index" ? undefined : (await getPublishedDoc(slug)) ?? getDocPage(slug);
   if (!doc) return {};
 
   const path = `/docs/${doc.slug}`;
@@ -62,7 +63,7 @@ export default async function DocPage({
 }) {
   const { slug } = await params;
   const locale = await resolveSeoLocale(searchParams);
-  const doc = slug === "index" ? undefined : getDocPage(slug);
+  const doc = slug === "index" ? undefined : (await getPublishedDoc(slug)) ?? getDocPage(slug);
   if (!doc) notFound();
 
   const canonicalUrl = toAbsoluteSiteUrl(getCanonicalPath(`/docs/${doc.slug}`, locale));
