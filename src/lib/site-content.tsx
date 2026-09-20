@@ -67,6 +67,7 @@ export const getPublishedDoc = cache(async (slug: string): Promise<DocPage | und
   const visuals = doc.visuals.map(normalizeVisual);
   return {
     slug: doc.slug,
+    revision: doc.revision,
     updatedAt: doc.updatedAt,
     version: doc.version,
     visuals,

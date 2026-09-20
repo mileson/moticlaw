@@ -114,7 +114,7 @@ export default async function DocPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
-      <header>
+      <header data-content-revision={doc.revision}>
         <p className="section-eyebrow-lg mb-3">{locale === "zh" ? "产品文档" : "Documentation"}</p>
         <h1 className="display text-3xl font-semibold tracking-[-0.03em] text-[var(--foreground)] sm:text-4xl">{doc.title[locale]}</h1>
         <p className="mt-3 text-base leading-7 text-[var(--muted)]">{doc.description[locale]}</p>

@@ -5,6 +5,7 @@ import type { ContentFigure, ContentSource } from "@/lib/content-schema";
 
 export type DocPage = {
   slug: string;
+  revision?: string;
   updatedAt: string;
   version: string;
   visuals: readonly ContentFigure[];
@@ -119,24 +120,29 @@ const billingProductCase: ContentFigure = {
     en: "The MotiClaw AI partner page shows 15 partners with distinct roles, runtime states, skills, and task counts",
   },
   caption: {
-    zh: "升级前先数清真正需要长期保留的伙伴。接近 16 位时，Plus 仍够用；需要继续拆分更多角色时，再比较 Pro。",
-    en: "Count the partners you genuinely need to keep before upgrading. Plus still fits a team near 16; compare Pro when you need to split work across more roles.",
+    zh: "升级前先数清真正需要长期保留的伙伴。Plus 最多支持 16 位；需要继续拆分更多角色时，再比较伙伴数量不设上限的 Pro。",
+    en: "Count the partners you genuinely need to keep before upgrading. Plus supports up to 16; compare Pro when you need an unlimited number of roles.",
   },
-  capturedAt: "2026-07-21T05:34:14.308Z",
-  appVersion: "0.3.3",
+  capturedAt: "2026-09-09T05:37:30.718Z",
+  appVersion: "0.3.7",
   dataMode: "synthetic",
   scenarioId: "solo-operator-overview",
   fixtureVersion: "2026.07.14.2",
-  fixtureSha256: "aaebab4b9eb169e5dc35213c87f0a53c324e98ef2509dcd2a18fd5c3e018ac08",
+  fixtureSha256: "4ccbddb30a20d7687bdec648844ef66c5cf51a28fef345829c51543baa47d355",
   productGitDirty: false,
-  productGitSha: "3c596f2375044c38f6112757bbfb61c5d2ad1d4a",
+  productGitSha: "3fd06e8f9a9d0898a7213c9e90cd567c661c05d7",
 };
 
 const billingSources: readonly ContentSource[] = [
   {
     title: "MotiClaw — 套餐价格",
     url: "https://www.moticlaw.com/pricing?lang=zh",
-    accessedAt: "2026-07-21",
+    accessedAt: "2026-09-09",
+  },
+  {
+    title: "MotiClaw — 会员套餐目录",
+    url: "https://www.moticlaw.com/api/billing/membership/catalog",
+    accessedAt: "2026-09-09",
   },
 ];
 
@@ -559,14 +565,14 @@ export const docPages: DocPage[] = [
   },
   {
     slug: "billing",
-    updatedAt: "2026-07-21",
-    version: "1.2",
+    updatedAt: "2026-09-09",
+    version: "1.3",
     visuals: [billingProductCase],
     sources: billingSources,
     title: { zh: "套餐与限额", en: "Plans & Limits" },
     description: {
-      zh: "根据托管模型用量和 AI 伙伴规模选择 Free、Plus 或 Pro，并在支付后确认新套餐已经生效。",
-      en: "Choose Free, Plus, or Pro from your hosted-model usage and AI partner team size, then verify the new plan after payment.",
+      zh: "根据托管模型用量和 AI 伙伴规模选择 Free、Plus 或 Pro，付款前看清价格与升级抵扣，再确认新套餐已经生效。",
+      en: "Choose Free, Plus, or Pro from your hosted-model usage and AI partner team size, review the price and any upgrade credit, then verify activation.",
     },
     content: {
       zh: (
@@ -584,17 +590,19 @@ export const docPages: DocPage[] = [
           <h2 className={h2}>1. 选当前够用的套餐</h2>
           <ul className={ul}>
             <li><span className={strong}>Free</span>：¥0，包含完整桌面端功能、基础托管模型限额和最多 8 位 AI 伙伴。还没稳定跑通一条工作流时，先留在 Free。</li>
-            <li><span className={strong}>Plus</span>：¥68 / 月或 ¥680 / 年，提供更多托管模型额度，最多创建 16 位 AI 伙伴。适合已经每天使用，但团队规模仍然清楚可控的人。</li>
-            <li><span className={strong}>Pro</span>：¥199 / 月，提供更高的托管模型额度，最多创建 32 位 AI 伙伴。适合整天运行多条工作流、确实需要继续拆分角色的人。</li>
+            <li><span className={strong}>Plus</span>：¥68 / 月或 ¥680 / 年，提供更多托管模型容量，最多创建 16 位 AI 伙伴。适合已经每天使用，但团队规模仍然清楚可控的人。</li>
+            <li><span className={strong}>Pro</span>：¥199 / 月或 ¥1990 / 年，托管模型容量最高约为 Plus 的 4 倍，AI 伙伴数量不设上限。适合整天运行多条工作流、确实需要继续拆分角色的人。</li>
           </ul>
           <div className={tip}>不要用旧截图或旧文章里的固定次数做预算。套餐目录会调整，购买前以官网「套餐价格」和会员中心当时展示的权益为准。</div>
 
-          <h2 className={h2}>2. 登录会员中心并完成支付</h2>
+          <h2 className={h2}>2. 付款前核对价格与升级抵扣</h2>
           <ol className={ol}>
             <li>登录官网，进入「会员中心 → 会员套餐」，再次核对价格、有效期和当前权益。</li>
-            <li>选择 Plus 或 Pro，使用微信扫码支付。不要在支付完成前关闭结果页。</li>
+            <li>选择 Plus 或 Pro。当前有效的 Plus 升级到 Pro 时，页面会先显示 Pro 原价、Plus 剩余已支付价值的抵扣、本次实付和预计有效期。</li>
+            <li>确认抵扣和实付金额后再创建订单，并使用微信扫码支付。升级成功后，原 Plus 套餐会结束。</li>
             <li>等待页面显示套餐已生效，再回到 MotiClaw Desktop；桌面端需要使用同一个账号。</li>
           </ol>
+          <div className={tip}>抵扣金额由当前套餐、剩余时间和实际支付记录共同决定，以付款前页面显示的报价为准。当前 Plus 没有可核对的已支付金额时，页面会显示按 Pro 原价升级；无法核对来源时先联系支持。</div>
 
           <h2 className={h2}>3. 完成生效验收</h2>
           <ol className={ol}>
@@ -608,6 +616,7 @@ export const docPages: DocPage[] = [
           <ul className={ul}>
             <li><span className={strong}>支付成功但桌面端没变化</span>：先确认网站和桌面端是不是同一个账号，再刷新会员状态；仍未同步时保留订单号和支付结果，联系支持处理，不要重复付款。</li>
             <li><span className={strong}>不知道选 Plus 还是 Pro</span>：如果 16 位伙伴够用，先选 Plus；只有容量和角色数量都持续成为限制时，再选 Pro。</li>
+            <li><span className={strong}>升级价格刚刚变化</span>：重新查看页面刷新后的抵扣与实付金额，确认无误后再付款。不要沿用先前看到的旧报价。</li>
             <li><span className={strong}>只是偶尔触发限额</span>：先等滚动窗口恢复，或减少同一时间运行的任务。升级解决的是持续容量，不是每一次短暂等待。</li>
           </ul>
 
@@ -630,17 +639,19 @@ export const docPages: DocPage[] = [
           <h2 className={h2}>1. Choose the plan that is enough today</h2>
           <ul className={ul}>
             <li><span className={strong}>Free</span>: ¥0, with the full desktop app, base hosted-model capacity, and up to 8 AI partners. Stay on Free until one workflow is running reliably.</li>
-            <li><span className={strong}>Plus</span>: ¥68 per month or ¥680 per year, with more hosted-model allowance and up to 16 AI partners. It fits daily use while the team still has a clear, controlled size.</li>
-            <li><span className={strong}>Pro</span>: ¥199 per month, with a higher hosted-model allowance and up to 32 AI partners. It fits heavier all-day workflows that genuinely need more distinct roles.</li>
+            <li><span className={strong}>Plus</span>: ¥68 per month or ¥680 per year, with more hosted-model capacity and up to 16 AI partners. It fits daily use while the team still has a clear, controlled size.</li>
+            <li><span className={strong}>Pro</span>: ¥199 per month or ¥1,990 per year, with up to about four times the hosted-model capacity of Plus and unlimited AI partners. It fits heavier all-day workflows that genuinely need more distinct roles.</li>
           </ul>
           <div className={tip}>Do not budget from fixed request counts in an old screenshot or article. The catalog can change; review the current Pricing page and membership center before buying.</div>
 
-          <h2 className={h2}>2. Sign in and pay from the membership center</h2>
+          <h2 className={h2}>2. Review the price and upgrade credit before paying</h2>
           <ol className={ol}>
             <li>Sign in on the website, open Membership Center → Plans, and review the current price, duration, and benefits again.</li>
-            <li>Choose Plus or Pro and pay with the WeChat Pay QR code. Keep the result page open until payment finishes.</li>
+            <li>Choose Plus or Pro. When an active Plus plan upgrades to Pro, the page first shows the Pro list price, credit from the remaining paid Plus value, the amount due, and the estimated expiry.</li>
+            <li>Review the credit and amount due before creating the order, then pay with the WeChat Pay QR code. The previous Plus plan ends after the upgrade succeeds.</li>
             <li>Wait for the page to show that the plan is active, then return to MotiClaw Desktop using the same account.</li>
           </ol>
+          <div className={tip}>The credit depends on the current plan, remaining time, and verified payment record. Use the quote shown immediately before payment. If no paid Plus value is available, the page shows the regular Pro price; contact support when the source cannot be verified.</div>
 
           <h2 className={h2}>3. Verify activation</h2>
           <ol className={ol}>
@@ -654,6 +665,7 @@ export const docPages: DocPage[] = [
           <ul className={ul}>
             <li><span className={strong}>Payment succeeded but the desktop app did not update</span>: confirm the website and desktop app use the same account, then refresh membership status. If it still does not sync, keep the order number and payment result for support instead of paying again.</li>
             <li><span className={strong}>You cannot choose between Plus and Pro</span>: start with Plus if 16 partners are enough. Choose Pro only when both capacity and role count remain persistent constraints.</li>
+            <li><span className={strong}>The upgrade price just changed</span>: review the refreshed credit and amount due, then confirm again before paying. Do not rely on an earlier quote.</li>
             <li><span className={strong}>You hit a limit only occasionally</span>: wait for the rolling window to recover or run fewer tasks at once. An upgrade solves sustained capacity, not every short wait.</li>
           </ul>
 
