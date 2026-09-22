@@ -783,10 +783,6 @@ export function SiteMembershipPage({
             </div>
           ) : watchaPayAccess?.access === "purchase_required" ? (
             <div className="billing-payment-sheet">
-              <div className="billing-watcha-sandbox-banner">
-                <CreditCard size={20} weight="regular" aria-hidden="true" />
-                <strong>{content.watchaPayLivePaymentNotice}</strong>
-              </div>
               {watchaPayAccess.qrCodeUrl || watchaPayAccess.purchaseUrl ? (
                 <div className="billing-payment-qr-card">
                   <div className="billing-payment-qr">
@@ -807,7 +803,6 @@ export function SiteMembershipPage({
                   </div>
                   <div className="billing-payment-qr-meta">
                     <strong className="billing-payment-plan-inline">{localizedPlanName(watchaPayPlan, locale)}</strong>
-                    <span className="billing-subtle">{content.watchaPayChooseTier}</span>
                   </div>
                 </div>
               ) : null}
@@ -826,7 +821,6 @@ export function SiteMembershipPage({
               >
                 {content.watchaPayRecheck}
               </button>
-              <p className="billing-payment-hint">{content.watchaPayChooseTier}</p>
             </div>
           ) : (
             <div className="billing-watcha-sandbox-state">
