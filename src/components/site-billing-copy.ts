@@ -50,7 +50,9 @@ export type SiteBillingCopy = {
   watchaPayDescription: string;
   watchaPayLivePaymentNotice: string;
   watchaPayChooseTier: string;
+  watchaPayQrCodeAlt: string;
   watchaPayOpenPurchase: string;
+  watchaPayOpenQrCode: string;
   watchaPayRecheck: string;
   watchaPayGrantedTitle: string;
   watchaPayGrantedBody: string;
@@ -164,7 +166,9 @@ export const siteBillingCopy: Record<"en" | "zh", SiteBillingCopy> = {
     watchaPayDescription: "Choose the billing period on the secure payment page. Your membership activates after payment is confirmed.",
     watchaPayLivePaymentNotice: "Live payment · your account will be charged after confirmation",
     watchaPayChooseTier: "Confirm monthly or annual billing and the final amount on the payment page.",
+    watchaPayQrCodeAlt: "QR code for membership payment",
     watchaPayOpenPurchase: "Continue to payment",
+    watchaPayOpenQrCode: "Open QR code",
     watchaPayRecheck: "Check entitlement again",
     watchaPayGrantedTitle: "Payment confirmed",
     watchaPayGrantedBody: "Your membership entitlement has been confirmed. Refresh the account page if the new plan is not shown yet.",
@@ -315,7 +319,9 @@ export const siteBillingCopy: Record<"en" | "zh", SiteBillingCopy> = {
     watchaPayDescription: "请在安全支付页选择付费周期。付款确认后，会员权益会自动生效。",
     watchaPayLivePaymentNotice: "正式支付 · 确认后将产生真实扣款",
     watchaPayChooseTier: "请在支付页确认月付或年付，以及最终支付金额。",
+    watchaPayQrCodeAlt: "会员支付二维码",
     watchaPayOpenPurchase: "前往支付",
+    watchaPayOpenQrCode: "打开二维码",
     watchaPayRecheck: "重新检查权益",
     watchaPayGrantedTitle: "付款已确认",
     watchaPayGrantedBody: "会员权益已经确认。如页面暂未显示新套餐，请刷新账号页面。",

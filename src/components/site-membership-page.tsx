@@ -787,10 +787,23 @@ export function SiteMembershipPage({
                 <CreditCard size={20} weight="regular" aria-hidden="true" />
                 <strong>{content.watchaPayLivePaymentNotice}</strong>
               </div>
-              {watchaPayAccess.purchaseUrl ? (
+              {watchaPayAccess.qrCodeUrl || watchaPayAccess.purchaseUrl ? (
                 <div className="billing-payment-qr-card">
                   <div className="billing-payment-qr">
-                    <QRCodeSVG value={watchaPayAccess.purchaseUrl} size={176} marginSize={2} level="M" />
+                    {watchaPayAccess.qrCodeUrl ? (
+                      // Dynamic payment QR hosts are validated as HTTPS by the response normalizer.
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        className="billing-payment-qr-image"
+                        src={watchaPayAccess.qrCodeUrl}
+                        alt={content.watchaPayQrCodeAlt}
+                        width={176}
+                        height={176}
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <QRCodeSVG value={watchaPayAccess.purchaseUrl!} size={176} marginSize={2} level="M" />
+                    )}
                   </div>
                   <div className="billing-payment-qr-meta">
                     <strong className="billing-payment-plan-inline">{localizedPlanName(watchaPayPlan, locale)}</strong>
@@ -804,7 +817,7 @@ export function SiteMembershipPage({
                 target="_blank"
                 rel="noreferrer"
               >
-                {content.watchaPayOpenPurchase}
+                {watchaPayAccess.purchaseUrl ? content.watchaPayOpenPurchase : content.watchaPayOpenQrCode}
               </a>
               <button
                 type="button"
