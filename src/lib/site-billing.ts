@@ -383,6 +383,20 @@ export function normalizeOrder(value: unknown): SitePointRechargeOrder | null {
   };
 }
 
+export function matchesSelectedPointsOrder(
+  order: SitePointRechargeOrder | null | undefined,
+  plan: SitePointPlan | null | undefined,
+): order is SitePointRechargeOrder {
+  return Boolean(
+    order
+    && plan
+    && order.planId === plan.planId
+    && order.points === plan.totalPoints
+    && order.amountCents === plan.amountCents
+    && (order.status === "paid" || order.codeUrl?.startsWith("weixin://")),
+  );
+}
+
 function normalizeLedgerKind(value: unknown): SitePointLedgerEntry["kind"] | null {
   if (value === "recharge" || value === "consume" || value === "adjustment") return value;
   return null;

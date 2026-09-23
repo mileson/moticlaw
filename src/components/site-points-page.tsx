@@ -37,6 +37,7 @@ import { sitePointsCopy } from "@/components/site-points-copy";
 import type { Locale } from "@/lib/locale";
 import type { SiteAuthSession } from "@/lib/site-auth";
 import {
+  matchesSelectedPointsOrder,
   normalizeAccount,
   normalizeLedgerEntry,
   normalizeOrder,
@@ -167,7 +168,7 @@ export function SitePointsPage({
     setPaymentNotice(null);
     setMessage(null);
     const pendingOrder = findPendingOrderForPlan(orders, planId);
-    if (pendingOrder?.codeUrl) {
+    if (matchesSelectedPointsOrder(pendingOrder, planMap.get(planId))) {
       setActiveOrder(pendingOrder);
       setPaymentModalOpen(true);
       return;
@@ -186,7 +187,7 @@ export function SitePointsPage({
         body: { planId },
       })) as ApiResult;
       const order = normalizeOrder(payload.order);
-      if (!order) throw new Error("payment_qr_missing");
+      if (!matchesSelectedPointsOrder(order, planMap.get(planId))) throw new Error("payment_qr_missing");
       setActiveOrder(order);
       await refreshPointsData({ quiet: true, preserveActiveOrder: order });
       if (order.status === "paid") {
@@ -430,17 +431,15 @@ export function SitePointsPage({
                           <button
                             type="button"
                             className="billing-plan-card-action billing-plan-card-action-primary"
-                            disabled={!watchaPayConfigured || watchaQuotaChecking}
+                            disabled={creating || watchaQuotaChecking}
                             onClick={() => {
-                              void checkWatchaQuota(plan.planId);
+                              void beginCheckout(plan.planId);
                             }}
                           >
                             <CreditCard size={17} weight="regular" aria-hidden="true" />
-                            {watchaQuotaChecking && selectedPlanId === plan.planId
-                              ? content.watchaQuotaChecking
-                              : watchaPayConfigured
-                                ? content.watchaQuotaAction
-                                : content.watchaQuotaUnavailableTitle}
+                            {creating && selectedPlanId === plan.planId
+                              ? content.creatingOrder
+                              : content.watchaQuotaAction}
                           </button>
                         ) : (
                           <Link
