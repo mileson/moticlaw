@@ -1,21 +1,30 @@
-# MotiClaw Website
+# MotiClaw 官网
 
-[简体中文](./README_CN.md)
 
-Public website source for [MotiClaw](https://www.moticlaw.com).
 
-[Build](#readme-section-1) · [仓库导航](#readme-section-2) · [开发](#readme-section-3)
+这里仅保留 [MotiClaw 官网](https://www.moticlaw.com)运行所需的公开源码。
+
+[本地开发](#readme-section-1) · [构建](#readme-section-2) · [仓库导航](#readme-section-3)
 
 <a id="readme-section-1"></a>
 
-## Build
+## 本地开发
+
+```bash
+pnpm install
+pnpm dev
+```
+
+<a id="readme-section-2"></a>
+
+## 构建
 
 ```bash
 pnpm build
 pnpm start
 ```
 
-<a id="readme-section-2"></a>
+<a id="readme-section-3"></a>
 
 ## 仓库导航
 
@@ -24,12 +33,3 @@ pnpm start
 | [`package.json`](package.json) | 依赖、开发与验证命令 |
 | [`public/`](public/) | 公开静态资源 |
 | [`src/`](src/) | 应用或服务实现 |
-
-<a id="readme-section-3"></a>
-
-## 开发
-
-```bash
-pnpm install
-pnpm dev
-```
